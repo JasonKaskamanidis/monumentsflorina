@@ -344,6 +344,7 @@ function filterAndShowMonuments() {
       return keys.some(k => checkedKeywords.includes(k));
     });
   }
+  window.filteredMonuments = filtered;
   clearMarkers();
   addMarkers(filtered);
 
@@ -747,7 +748,7 @@ openTimelineBtn.addEventListener('click', async () => {
     // Wait for PapaParse to load
     while (!window.Papa) { await new Promise(r => setTimeout(r, 50)); }
     // Fetch and parse CSV
-    const response = await fetch('../data.csv');
+    const response = await fetch('data.csv');
     const csvText = await response.text();
     const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
     // Map to vis-timeline items
@@ -861,3 +862,269 @@ openTimelineBtn.addEventListener('click', async () => {
     }
   }
 });
+
+// --- App Tour for Visitors ---
+function showAppTourIfNeeded() {
+  // Only for visitors
+  if (!window.location.search.includes('visitor=1')) return;
+  if (localStorage.getItem('appTourCompleted')) return;
+
+  const steps = [
+    "Καλώς ήρθες στον διαδραστικό χάρτη της Φλώρινας! Εδώ μπορείς να εξερευνήσεις τα μνημεία της περιοχής.",
+    "Χρησιμοποίησε τα κουμπιά στο κάτω μέρος για να αλλάξεις στυλ χάρτη, να δεις το χρονολόγιο ή να επιστρέψεις στην αρχική σελίδα.",
+    "Μπορείς να φιλτράρεις τα μνημεία από το πλαϊνό μενού (κουμπί ☰ πάνω αριστερά).",
+    "Κάνε κλικ σε ένα μνημείο για να δεις περισσότερες πληροφορίες και φωτογραφίες.",
+    "Απόλαυσε την περιήγηση! Μπορείς να ξαναδείς αυτό το tour αν καθαρίσεις τα δεδομένα του browser σου."
+  ];
+  let step = 0;
+
+  const modal = document.getElementById('app-tour-modal');
+  const content = document.getElementById('app-tour-content');
+  const nextBtn = document.getElementById('app-tour-next-btn');
+  const finishBtn = document.getElementById('app-tour-finish-btn');
+
+  function showStep() {
+    content.textContent = steps[step];
+    nextBtn.style.display = step < steps.length - 1 ? 'inline-block' : 'none';
+    finishBtn.style.display = step === steps.length - 1 ? 'inline-block' : 'none';
+    modal.style.display = 'flex';
+  }
+
+  nextBtn.onclick = () => {
+    step++;
+    showStep();
+  };
+  finishBtn.onclick = () => {
+    modal.style.display = 'none';
+    localStorage.setItem('appTourCompleted', '1');
+  };
+
+  showStep();
+}
+window.addEventListener('DOMContentLoaded', showAppTourIfNeeded);
+
+// After rendering the filters section, add the data viz button and modal
+setTimeout(() => {
+  const filtersSection = document.getElementById('filters-section');
+  if (filtersSection && !document.getElementById('open-data-viz-btn')) {
+    // Find the Λέξεις κλειδιά filter-group
+    const filterGroups = filtersSection.querySelectorAll('.filter-group');
+    let keywordsGroup = null;
+    filterGroups.forEach(g => {
+      if (g.textContent.includes('Λέξεις κλειδιά')) keywordsGroup = g;
+    });
+    if (keywordsGroup) {
+      const btn = document.createElement('button');
+      btn.id = 'open-data-viz-btn';
+      btn.textContent = '📊 Δεδομένα & Διαγράμματα';
+      btn.className = 'data-viz-btn';
+      btn.style.margin = '1.1rem 0 0.2rem 0';
+      btn.style.width = '100%';
+      btn.style.fontSize = '1.08rem';
+      btn.style.fontWeight = '600';
+      btn.style.background = 'linear-gradient(90deg, #ffe9b3 60%, #fbbf24 100%)';
+      btn.style.color = '#181818';
+      btn.style.border = 'none';
+      btn.style.borderRadius = '12px';
+      btn.style.padding = '0.7rem 0';
+      btn.style.cursor = 'pointer';
+      btn.style.boxShadow = '0 2px 12px rgba(44,108,223,0.10)';
+      btn.style.transition = 'background 0.18s, color 0.18s, box-shadow 0.18s';
+      btn.onmouseover = () => { btn.style.background = 'linear-gradient(90deg, #fbbf24 60%, #ffe9b3 100%)'; };
+      btn.onmouseout = () => { btn.style.background = 'linear-gradient(90deg, #ffe9b3 60%, #fbbf24 100%)'; };
+      keywordsGroup.appendChild(btn);
+    }
+    // Add the modal HTML if not present
+    if (!document.getElementById('data-viz-modal')) {
+      const modal = document.createElement('div');
+      modal.id = 'data-viz-modal';
+      modal.style.display = 'none';
+      modal.innerHTML = `
+        <div class="data-viz-backdrop"></div>
+        <div class="data-viz-dialog">
+          <button id="close-data-viz-btn" class="data-viz-close">&times;</button>
+          <h2 style="margin-bottom:1.2rem;">Διαδραστικά Διαγράμματα Δεδομένων</h2>
+          <div id="data-viz-charts" style="width:100%;max-width:900px;margin:auto;display:flex;flex-wrap:wrap;gap:2.2rem;justify-content:center;"></div>
+        </div>
+      `;
+      modal.className = 'data-viz-modal';
+      document.body.appendChild(modal);
+      // Close logic
+      document.getElementById('close-data-viz-btn').onclick = () => {
+        modal.style.display = 'none';
+      };
+      modal.querySelector('.data-viz-backdrop').onclick = () => {
+        modal.style.display = 'none';
+      };
+    }
+    // Button click logic
+    document.getElementById('open-data-viz-btn').onclick = async () => {
+      // Load Chart.js if not loaded
+      if (!window.Chart) {
+        const chartScript = document.createElement('script');
+        chartScript.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+        document.head.appendChild(chartScript);
+        await new Promise(r => { chartScript.onload = r; });
+      }
+      // Prepare data
+      let filtered = window.filteredMonuments || window.allMonuments || [];
+      if (!Array.isArray(filtered)) filtered = [];
+      // Prepare chart data
+      const chartsDiv = document.getElementById('data-viz-charts');
+      chartsDiv.innerHTML = '';
+      // --- Drilldown and List in Same Modal ---
+      let drilldownState = { level: 'root', domain: null, category: null };
+      function showMonumentDetailsInViz(monument, backToListFn) {
+        let listDiv = document.getElementById('data-viz-list');
+        if (!listDiv) return;
+        let html = `<button id='back-to-list-btn' style='margin-bottom:1.2rem;background:#eee;border:none;border-radius:8px;padding:0.5em 1.2em;cursor:pointer;font-size:1.05em;'>← Επιστροφή στη λίστα</button>`;
+        html += `<div style='background:#fff;padding:1.5rem 1.2rem;border-radius:16px;max-width:600px;margin:auto;box-shadow:0 4px 32px rgba(0,0,0,0.10);'>`;
+        if (monument['εικόνα']) {
+          html += `<div style='text-align:center;margin-bottom:1rem;'><img src='${monument['εικόνα']}' alt='Εικόνα' style='max-width:100%;max-height:220px;border-radius:10px;'></div>`;
+        }
+        html += `<h2 style='margin-bottom:0.7rem;'>${monument['τίτλος']||''}</h2>`;
+        html += `<div style='margin-bottom:1rem;'>${monument['περιγραφή']||''}</div>`;
+        html += `<div><strong>Χώρος:</strong> ${monument['χώρος']||''}</div>`;
+        html += `<div><strong>Χρόνος:</strong> ${monument['χρόνος']||''}</div>`;
+        html += `<div><strong>Τομέας:</strong> ${monument['τομέας']||''}</div>`;
+        html += `<div><strong>Κατηγορία:</strong> ${monument['κατηγορία']||''}</div>`;
+        html += `<div style='margin:0.7rem 0;'><strong>Λέξεις κλειδιά:</strong> ${(monument['λέξεις-κλειδιά']||'').split(',').filter(Boolean).slice(0,3).join(', ')}</div>`;
+        if (monument['πηγές']) html += `<div style='margin-bottom:0.7rem;'><strong>Πηγές:</strong> ${monument['πηγές']}</div>`;
+        html += `</div>`;
+        listDiv.innerHTML = html;
+        document.getElementById('back-to-list-btn').onclick = backToListFn;
+      }
+      function showMonumentListInViz(monuments, title) {
+        let listDiv = document.getElementById('data-viz-list');
+        if (!listDiv) {
+          listDiv = document.createElement('div');
+          listDiv.id = 'data-viz-list';
+          listDiv.style = 'width:100%;max-width:700px;margin:2.2rem auto 0 auto;';
+          chartsDiv.parentElement.appendChild(listDiv);
+        }
+        let html = `<h3 style='margin-bottom:1.2rem;'>${title}</h3>`;
+        if (monuments.length === 0) {
+          html += '<div style="color:#888;">Δεν βρέθηκαν μνημεία.</div>';
+        } else {
+          html += '<ul style="list-style:none;padding:0;max-width:600px;">';
+          monuments.forEach(m => {
+            html += `<li style='margin-bottom:0.7em;padding:0.5em 0.2em;border-bottom:1px solid #eee;'><b>${m['τίτλος']||''}</b> <span style='color:#888;'>(${m['χρόνος']||''})</span> <button style='margin-left:1em;background:#fbbf24;border:none;border-radius:6px;padding:0.2em 0.7em;cursor:pointer;' data-id='${m.id}'>Λεπτομέρειες</button></li>`;
+          });
+          html += '</ul>';
+        }
+        listDiv.innerHTML = html;
+        // Attach detail button handlers
+        listDiv.querySelectorAll('button[data-id]').forEach(btn => {
+          btn.onclick = () => {
+            const m = monuments.find(x => String(x.id) === btn.getAttribute('data-id'));
+            if (m) showMonumentDetailsInViz(m, () => showMonumentListInViz(monuments, title));
+          };
+        });
+        listDiv.style.display = 'block';
+      }
+      function renderCharts(drilldown) {
+        chartsDiv.innerHTML = '';
+        // Filtered data for drilldown
+        let data = filtered;
+        if (drilldown.domain) data = data.filter(m => m['τομέας'] === drilldown.domain);
+        if (drilldown.category) data = data.filter(m => m['κατηγορία'] === drilldown.category);
+        // --- Domain Pie ---
+        const domains = {};
+        data.forEach(m => { if (m['τομέας']) domains[m['τομέας']] = (domains[m['τομέας']]||0)+1; });
+        chartsDiv.innerHTML += `<div style='width:320px;'><canvas id='domain-pie'></canvas><div style='text-align:center;margin-top:0.5rem;font-size:1.07em;'>Τομέας</div></div>`;
+        // --- Category Pie ---
+        const categories = {};
+        data.forEach(m => { if (m['κατηγορία']) categories[m['κατηγορία']] = (categories[m['κατηγορία']]||0)+1; });
+        chartsDiv.innerHTML += `<div style='width:320px;'><canvas id='category-pie'></canvas><div style='text-align:center;margin-top:0.5rem;font-size:1.07em;'>Κατηγορία</div></div>`;
+        // --- Year Bar ---
+        const years = {};
+        data.forEach(m => {
+          const y = String(m['χρόνος']).slice(0,4);
+          if (/^\d{4}$/.test(y)) years[y] = (years[y]||0)+1;
+        });
+        chartsDiv.innerHTML += `<div style='width:420px;'><canvas id='year-bar'></canvas><div style='text-align:center;margin-top:0.5rem;font-size:1.07em;'>Χρόνος (ανά έτος)</div></div>`;
+        // --- Back Button for Drilldown ---
+        if (drilldown.domain || drilldown.category) {
+          const backBtn = document.createElement('button');
+          backBtn.textContent = '← Επιστροφή';
+          backBtn.style = 'margin-bottom:1.2rem;background:#eee;border:none;border-radius:8px;padding:0.5em 1.2em;cursor:pointer;font-size:1.05em;';
+          backBtn.onclick = () => {
+            if (drilldown.category) {
+              drilldownState = { level: 'domain', domain: drilldown.domain, category: null };
+            } else if (drilldown.domain) {
+              drilldownState = { level: 'root', domain: null, category: null };
+            }
+            renderCharts(drilldownState);
+          };
+          chartsDiv.prepend(backBtn);
+        }
+        // --- Render Charts ---
+        setTimeout(() => {
+          const pieColors = [
+            '#fbbf24', '#22c55e', '#3b82f6', '#ef4444', '#a21caf', '#eab308',
+            '#14b8a6', '#6366f1', '#f472b6', '#f59e42', '#10b981', '#f43f5e'
+          ];
+          const domainPie = new Chart(document.getElementById('domain-pie'), {
+            type: 'pie',
+            data: { labels: Object.keys(domains), datasets: [{ data: Object.values(domains), backgroundColor: pieColors }] },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } },
+              onClick: (evt, elements) => {
+                if (elements.length) {
+                  const idx = elements[0].index;
+                  const label = domainPie.data.labels[idx];
+                  // Drilldown to domain
+                  drilldownState = { level: 'domain', domain: label, category: null };
+                  renderCharts(drilldownState);
+                  // Show list for this domain
+                  const group = filtered.filter(m => m['τομέας'] === label);
+                  showMonumentListInViz(group, `Μνημεία στον τομέα "${label}"`);
+                }
+              }
+            }
+          });
+          const categoryPie = new Chart(document.getElementById('category-pie'), {
+            type: 'pie',
+            data: { labels: Object.keys(categories), datasets: [{ data: Object.values(categories), backgroundColor: pieColors }] },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } },
+              onClick: (evt, elements) => {
+                if (elements.length) {
+                  const idx = elements[0].index;
+                  const label = categoryPie.data.labels[idx];
+                  // Drilldown to category
+                  drilldownState = { level: 'category', domain: drilldown.domain, category: label };
+                  renderCharts(drilldownState);
+                  // Show list for this category
+                  let group = filtered;
+                  if (drilldown.domain) group = group.filter(m => m['τομέας'] === drilldown.domain);
+                  group = group.filter(m => m['κατηγορία'] === label);
+                  showMonumentListInViz(group, `Μνημεία στην κατηγορία "${label}"`);
+                }
+              }
+            }
+          });
+          const yearBar = new Chart(document.getElementById('year-bar'), {
+            type: 'bar',
+            data: { labels: Object.keys(years), datasets: [{ label: 'Μνημεία', data: Object.values(years), backgroundColor: '#fbbf24' }] },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { title: { display: true, text: 'Έτος' } }, y: { title: { display: true, text: 'Μνημεία' } } },
+              onClick: (evt, elements) => {
+                if (elements.length) {
+                  const idx = elements[0].index;
+                  const label = yearBar.data.labels[idx];
+                  // Show list for this year
+                  let group = filtered;
+                  if (drilldown.domain) group = group.filter(m => m['τομέας'] === drilldown.domain);
+                  if (drilldown.category) group = group.filter(m => m['κατηγορία'] === drilldown.category);
+                  group = group.filter(m => String(m['χρόνος']).slice(0,4) === label);
+                  showMonumentListInViz(group, `Μνημεία για το έτος "${label}"`);
+                }
+              }
+            }
+          });
+        }, 100);
+      }
+      // Initial render
+      renderCharts(drilldownState);
+      document.getElementById('data-viz-modal').style.display = 'flex';
+    };
+  }
+}, 500);
