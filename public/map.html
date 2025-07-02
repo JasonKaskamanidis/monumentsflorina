@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UniMonuments Map</title>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.12.0/mapbox-gl.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://unpkg.com/vis-timeline@latest/styles/vis-timeline-graph2d.min.css" rel="stylesheet" />
+  <style>
+    html, body { height: 100%; margin: 0; padding: 0; }
+    body { height: 100vh; width: 100vw; overflow: hidden; }
+    #map { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; border-radius: 0; margin: 0; z-index: 1; }
+    .header { display: none; }
+    #timeline-container {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100vw;
+      height: 18vh;
+      background: var(--background-card);
+      box-shadow: var(--box-shadow);
+      z-index: 10;
+      display: none;
+      overflow: visible;
+      padding: 0.5rem 1.2rem;
+      border-radius: 0;
+    }
+    #timeline-btn {
+      position: absolute;
+      left: 50%;
+      bottom: 32vh;
+      transform: translateX(-50%);
+      z-index: 20;
+      padding: 10px 24px;
+      border-radius: 20px;
+      background: #222;
+      color: #fff;
+      border: none;
+      font-size: 1.1em;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      transition: background 0.2s;
+    }
+  </style>
+</head>
+<body>
+  <button class="logout-btn" id="logout-btn" title="Logout">⎋</button>
+  <div id="map"></div>
+  <div id="timeline-container"></div>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.12.0/mapbox-gl.js"></script>
+  <script src="https://unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js"></script>
+  <script type="module" src="../src/map.js"></script>
+</body>
+</html> 
