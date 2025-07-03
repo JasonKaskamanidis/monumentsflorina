@@ -487,7 +487,7 @@ body {
   margin-bottom: 2rem;
   padding-bottom: 1.2rem;
   border-bottom: 1px solid #f0f0f0;
-  margin-top: 56px;
+  margin-top: 16px;
 }
 #side-panel #logged-in-user {
   background: none;
@@ -1432,4 +1432,77 @@ button:hover, .landing-btn:hover, .action-btn:hover, .logout-btn:hover, .add-mon
 .data-viz-btn:hover { background: linear-gradient(90deg, #fbbf24 60%, #ffe9b3 100%); }
 @media (max-width: 700px) {
   .data-viz-dialog { padding: 1.1rem 0.5rem 1.1rem 0.5rem; max-width: 99vw; font-size: 0.97rem; }
+}
+
+#side-panel .visitor-message {
+  margin-top: 3.5rem !important;
+  margin-bottom: 0.4rem !important;
+}
+#side-panel #user-info-container {
+  margin-top: 16px;
+}
+
+#side-panel-close {
+  font-size: 3.2rem !important;
+  color: #ffe9b3 !important;
+  background: none !important;
+  border: none !important;
+  position: absolute !important;
+  top: 12px !important;
+  right: 18px !important;
+  z-index: 2101 !important;
+  cursor: pointer !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  transition: color 0.18s;
+}
+#side-panel-close:hover {
+  color: #fbbf24 !important;
+}
+
+#side-panel.with-timeline {
+  bottom: 20vh !important;
+  height: auto !important;
+  max-height: calc(100vh - 20vh) !important;
+  transition: bottom 0.4s cubic-bezier(.4,2,.6,1), max-height 0.4s cubic-bezier(.4,2,.6,1);
+}
+
+.data-viz-modal[style*="display: flex"] ~ #side-panel,
+.data-viz-modal[style*="display: flex"] ~ .side-panel,
+#side-panel.data-viz-open {
+  z-index: 5000 !important;
+}
+
+.active-filter-tag {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(90deg, #ffe9b3 60%, #fbbf24 100%);
+  color: #181818;
+  font-size: 0.97em;
+  font-weight: 500;
+  border-radius: 12px;
+  padding: 0.18em 0.7em 0.18em 0.6em;
+  margin: 0 0.15em 0.15em 0;
+  box-shadow: 0 1.5px 6px rgba(44,108,223,0.07);
+  border: none;
+  transition: background 0.18s, color 0.18s;
+}
+.active-filter-tag:hover {
+  background: linear-gradient(90deg, #fbbf24 60%, #ffe9b3 100%);
+}
+.remove-filter-btn {
+  background: none;
+  border: none;
+  color: #a67c00;
+  font-size: 1.1em;
+  margin-left: 0.3em;
+  cursor: pointer;
+  padding: 0 0.1em;
+  border-radius: 50%;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1;
+}
+.remove-filter-btn:hover {
+  background: #ffe9b3;
+  color: #ef4444;
 }
