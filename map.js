@@ -153,9 +153,7 @@ if (!document.getElementById('side-panel')) {
     <button id="side-panel-toggle" title="Menu">&#9776;</button>
     <div id="side-panel">
       <button id="side-panel-close" title="Κλείσιμο" style="display:none;position:absolute;top:18px;right:18px;background:none;border:none;font-size:2rem;color:#ffe9b3;z-index:2101;cursor:pointer;">&times;</button>
-      ${isVisitor ? `<div class="visitor-message" style="background:#ffe9b3;color:#a67c00;padding:0.7rem 1rem;border-radius:8px;font-weight:600;text-align:center;margin-bottom:1.2rem;">Επισκέπτης: Μόνο προβολή</div>` : ''}
-      <div id="user-info-container"></div>
-      <div style="margin:0.7rem 0 1.1rem 0; text-align:center; font-size:0.97em; color:#8a8a8a;">Developed by Jason Kaskamanidis 2025</div>
+      <div class="welcome-message" style="color:#a67c00;padding:0.7rem 1rem;border-radius:8px;font-weight:600;text-align:center;margin-bottom:1.2rem;">Καλωσήρθατε στην εφαρμογή Κρυμμένη Ιστορία της Φλώρινας</div>
       <div>
         <label class="search-label" for="map-search">Αναζήτηση στον χάρτη</label>
         <input id="map-search" class="searchbox" type="text" placeholder="Αναζήτηση στον χάρτη...">
@@ -188,12 +186,8 @@ if (!document.getElementById('side-panel')) {
           </div>
         </div>
         <div class="filter-group">
-          <label for="filter-time-min">Χρόνος: <span id="time-slider-value"></span></label>
-          <div style="display:flex;align-items:center;gap:0.7em;">
-            <input type="range" id="filter-time-min" class="filter-slider" min="0" max="100" value="0">
-            <span style="font-size:0.97em;">έως</span>
-            <input type="range" id="filter-time-max" class="filter-slider" min="0" max="100" value="100">
-          </div>
+          <label for="year-slider">Χρόνος: <span id="time-slider-value"></span></label>
+          <div id="year-slider" style="margin: 1.2em 0 1.2em 0;"></div>
         </div>
         <div class="filter-group">
           <label>Λέξεις κλειδιά</label>
@@ -257,35 +251,38 @@ function populateSidePanelFilters(monuments) {
   // Υποκατηγορία
   const subcategories = getUnique('υποκατηγορία');
   document.getElementById('subcategory-dropdown-menu').innerHTML = subcategories.map(val => `<label><input type="checkbox" name="subcategory-filter" value="${val}"> ${val}</label>`).join('<br>');
-  // Χρόνος (two-way slider by year)
+  // Χρόνος (noUiSlider dual-handle)
   const years = getUnique('χρόνος').map(v => {
     const y = String(v).slice(0,4);
     return (/^\d{4}$/.test(y)) ? Number(y) : null;
   }).filter(n => n);
   const minYear = Math.min(...years);
   const maxYear = Math.max(...years);
-  const minSlider = document.getElementById('filter-time-min');
-  const maxSlider = document.getElementById('filter-time-max');
-  minSlider.min = minYear;
-  minSlider.max = maxYear;
-  maxSlider.min = minYear;
-  maxSlider.max = maxYear;
-  minSlider.value = minYear;
-  maxSlider.value = maxYear;
-  function updateSliderLabel() {
-    document.getElementById('time-slider-value').textContent = `${minSlider.value} - ${maxSlider.value}`;
+  const yearSlider = document.getElementById('year-slider');
+  if (yearSlider && window.noUiSlider) {
+    if (yearSlider.noUiSlider) yearSlider.noUiSlider.destroy();
+    noUiSlider.create(yearSlider, {
+      start: [minYear, maxYear],
+      connect: true,
+      step: 1,
+      range: { min: minYear, max: maxYear },
+      tooltips: false,
+      format: {
+        to: v => Math.round(v),
+        from: v => Math.round(v)
+      }
+    });
+    const updateLabelAndFilter = () => {
+      const [from, to] = yearSlider.noUiSlider.get().map(Number);
+      document.getElementById('time-slider-value').textContent = `${from} - ${to}`;
+      filterAndShowMonuments();
+    };
+    yearSlider.noUiSlider.on('update', updateLabelAndFilter);
+    // For clear filters
+    yearSlider.noUiSlider.on('set', updateLabelAndFilter);
+    // Initial label
+    document.getElementById('time-slider-value').textContent = `${minYear} - ${maxYear}`;
   }
-  minSlider.oninput = function() {
-    if (Number(minSlider.value) > Number(maxSlider.value)) minSlider.value = maxSlider.value;
-    updateSliderLabel();
-    filterAndShowMonuments();
-  };
-  maxSlider.oninput = function() {
-    if (Number(maxSlider.value) < Number(minSlider.value)) maxSlider.value = minSlider.value;
-    updateSliderLabel();
-    filterAndShowMonuments();
-  };
-  updateSliderLabel();
   // Λέξεις κλειδιά (split by comma)
   const keywords = getUnique('λέξεις-κλειδιά', true);
   document.getElementById('keywords-dropdown-menu').innerHTML = keywords.map(val => `<label><input type="checkbox" name="keywords-filter" value="${val}"> ${val}</label>`).join('<br>');
@@ -351,16 +348,21 @@ function filterAndShowMonuments() {
     filtered = filtered.filter(m => checkedSubcategories.includes(m['υποκατηγορία']));
     checkedSubcategories.forEach(val => activeFilters.push({type: 'Υποκατηγορία', value: val, name: 'subcategory-filter'}));
   }
-  // Χρόνος (two-way slider by year)
-  const minYear = Number(document.getElementById('filter-time-min').value);
-  const maxYear = Number(document.getElementById('filter-time-max').value);
-  filtered = filtered.filter(m => {
-    const y = String(m['χρόνος']).slice(0,4);
-    const year = Number(y);
-    return year >= minYear && year <= maxYear;
-  });
-  if (minYear !== Number(document.getElementById('filter-time-min').min) || maxYear !== Number(document.getElementById('filter-time-max').max)) {
-    activeFilters.push({type: 'Χρόνος', value: `${minYear} - ${maxYear}`, name: 'year-range'});
+  // Χρόνος (noUiSlider dual-handle)
+  const yearSlider = document.getElementById('year-slider');
+  let minYear = null, maxYear = null;
+  if (yearSlider && yearSlider.noUiSlider) {
+    [minYear, maxYear] = yearSlider.noUiSlider.get().map(Number);
+  }
+  if (minYear !== null && maxYear !== null) {
+    filtered = filtered.filter(m => {
+      const y = String(m['χρόνος']).slice(0,4);
+      const year = Number(y);
+      return year >= minYear && year <= maxYear;
+    });
+    if (minYear !== Number(yearSlider.noUiSlider.options.range.min) || maxYear !== Number(yearSlider.noUiSlider.options.range.max)) {
+      activeFilters.push({type: 'Χρόνος', value: `${minYear} - ${maxYear}`, name: 'year-range'});
+    }
   }
   // Λέξεις κλειδιά (at least one match)
   const checkedKeywords = getCheckedValues('keywords-filter');
@@ -398,8 +400,10 @@ function filterAndShowMonuments() {
       const type = tag.getAttribute('data-type');
       const value = tag.getAttribute('data-value');
       if (type === 'year-range') {
-        document.getElementById('filter-time-min').value = document.getElementById('filter-time-min').min;
-        document.getElementById('filter-time-max').value = document.getElementById('filter-time-max').max;
+        const yearSlider = document.getElementById('year-slider');
+        if (yearSlider && yearSlider.noUiSlider) {
+          yearSlider.noUiSlider.set([yearSlider.noUiSlider.options.range.min, yearSlider.noUiSlider.options.range.max]);
+        }
       } else {
         const selector = `input[name='${type}'][value='${value}']`;
         const input = document.querySelector(selector);
@@ -409,8 +413,8 @@ function filterAndShowMonuments() {
     };
   });
 
-  // --- Update Timeline ---
-  if (timelineLoaded && timelineContainer.style.display !== 'none') {
+  // --- Update Timeline (always, if loaded) ---
+  if (timelineLoaded && timelineInstance) {
     // Preprocess to offset items with the same day
     const dateMap = {};
     const filteredTimelineData = filtered.map((row, idx) => {
@@ -420,14 +424,21 @@ function filterAndShowMonuments() {
       if (!dateMap[dayKey]) dateMap[dayKey] = 0;
       const offsetMinutes = dateMap[dayKey] * 5;
       dateMap[dayKey]++;
-      const offsetDate = new Date(date);
+      // Parse date as local noon to avoid timezone issues
+      const [year, month, day] = dayKey.split('-').map(Number);
+      const offsetDate = new Date(year, month - 1, day, 12, 0, 0);
       offsetDate.setMinutes(offsetDate.getMinutes() + offsetMinutes);
+      // Ensure id is preserved or generated in data
+      const dataWithId = { ...row };
+      if (!dataWithId.id) {
+        dataWithId.id = `${row['συντεταγμένες'] || ''}|${row['τίτλος'] || ''}`;
+      }
       return {
         id: idx + 1,
-        content: `<span style='font-size:0.95em;font-family:sans-serif;font-weight:500;'>${row['τίτλος'] || ''}</span>`,
+        content: '',
         start: offsetDate.toISOString(),
-        title: row['περιγραφή'] || '',
-        data: row
+        title: row['τίτλος'] || '',
+        data: dataWithId
       };
     }).filter(Boolean);
     // Calculate min and max dates for focus
@@ -438,7 +449,6 @@ function filterAndShowMonuments() {
     startFocus.setMonth(startFocus.getMonth() - 1);
     const endFocus = new Date(maxDate);
     endFocus.setMonth(endFocus.getMonth() + 1);
-    // Update timeline
     timelineInstance.setItems(filteredTimelineData);
     timelineInstance.setWindow(startFocus, endFocus, { animation: true });
   }
@@ -462,8 +472,10 @@ document.addEventListener('change', function(e) {
 
 document.getElementById('clear-filters-btn').onclick = function() {
   // Reset all filters
-  document.getElementById('filter-time-min').value = '';
-  document.getElementById('filter-time-max').value = '';
+  const yearSlider = document.getElementById('year-slider');
+  if (yearSlider && yearSlider.noUiSlider) {
+    yearSlider.noUiSlider.set([yearSlider.noUiSlider.options.range.min, yearSlider.noUiSlider.options.range.max]);
+  }
   Array.from(document.querySelectorAll('#filters-section input[type=checkbox]')).forEach(cb => cb.checked = false);
   filterAndShowMonuments();
 };
@@ -472,30 +484,14 @@ fetchMonuments().then(monuments => {
   allMonuments = monuments;
   populateSidePanelFilters(monuments);
   filterAndShowMonuments();
+  const spinner = document.getElementById('loading-spinner');
+  if (spinner) spinner.style.display = 'none';
 });
 
 // --- Show logged in user UI ---
 function getUsernameFromEmail(email) {
   return email ? email.split('@')[0] : '';
 }
-
-function showLoggedInUserUI(email) {
-  let container = document.getElementById('user-info-container');
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'user-info-container';
-    document.getElementById('side-panel').prepend(container);
-  }
-  let userDiv = document.getElementById('logged-in-user');
-  if (!userDiv) {
-    userDiv = document.createElement('div');
-    userDiv.id = 'logged-in-user';
-    container.appendChild(userDiv);
-  }
-  userDiv.textContent = `Γεια σας, ${getUsernameFromEmail(email)} 👋`;
-}
-
-showLoggedInUserUI(currentUser?.email);
 
 function showMonumentDetails(monument) {
   document.getElementById('monument-details-modal').style.display = 'flex';
@@ -747,13 +743,31 @@ async function fetchMonuments() {
 // --- Monument Filtering ---
 let allMonuments = [];
 let currentMarkers = [];
+let selectedMarker = null;
+
+function setSelectedMarker(marker) {
+  if (selectedMarker && selectedMarker !== marker) {
+    // Reset previous marker color
+    selectedMarker.getElement().style.background = '';
+    selectedMarker.getElement().style.boxShadow = '';
+    selectedMarker.getElement().style.border = '';
+  }
+  selectedMarker = marker;
+  if (marker) {
+    marker.getElement().style.background = '#2563eb'; // blue
+    marker.getElement().style.boxShadow = '0 0 0 4px #93c5fd';
+    marker.getElement().style.border = '2px solid #fff';
+  }
+}
 
 function clearMarkers() {
   currentMarkers.forEach(marker => marker.remove());
   currentMarkers = [];
+  selectedMarker = null; // Clear selected marker when clearing all
 }
 
 function addMarkers(monuments) {
+  currentMarkers = [];
   monuments.forEach(monument => {
     if (!monument['συντεταγμένες']) return;
     const [lat, lng] = monument['συντεταγμένες'].split(',').map(s => Number(s.trim()));
@@ -761,9 +775,107 @@ function addMarkers(monuments) {
     const marker = new mapboxgl.Marker()
       .setLngLat([lng, lat])
       .addTo(map);
-    marker.getElement().addEventListener('click', () => showMonumentDetails(monument));
+    marker.getElement().addEventListener('click', () => {
+      map.easeTo({ center: [lng, lat], zoom: 18, speed: 1.2 });
+      setSelectedMarker(marker);
+      showMonumentDetails(monument);
+    });
+    marker.monumentId = monument.id;
     currentMarkers.push(marker);
   });
+}
+
+// When selecting from timeline, also highlight the marker
+function highlightMarkerByMonument(monument) {
+  if (!monument || !monument.id) return;
+  const marker = currentMarkers.find(m => m.monumentId === monument.id);
+  if (marker) setSelectedMarker(marker);
+}
+
+// Floating details card next to marker
+function showMonumentDetailsFloating(monument, lngLat) {
+  // Remove any existing floating card
+  let oldCard = document.getElementById('floating-monument-card');
+  if (oldCard) oldCard.remove();
+  // Project marker to screen coordinates
+  const point = map.project(lngLat);
+  // Decide left/right based on marker position
+  const mapRect = document.getElementById('map').getBoundingClientRect();
+  const cardWidth = 340;
+  let left = point.x + 20;
+  let top = point.y - 80;
+  let align = 'left';
+  if (point.x > map.getContainer().clientWidth / 2) {
+    left = point.x - cardWidth - 20;
+    align = 'right';
+  }
+  if (left < 10) left = 10;
+  if (top < 10) top = 10;
+  // Card HTML
+  const card = document.createElement('div');
+  card.id = 'floating-monument-card';
+  card.style.position = 'absolute';
+  card.style.left = left + 'px';
+  card.style.top = top + 'px';
+  card.style.width = cardWidth + 'px';
+  card.style.maxWidth = '95vw';
+  card.style.background = '#fff';
+  card.style.borderRadius = '16px';
+  card.style.boxShadow = '0 4px 32px rgba(0,0,0,0.18)';
+  card.style.padding = '2rem 1.2rem 1.2rem 1.2rem';
+  card.style.zIndex = 3001;
+  card.style.display = 'flex';
+  card.style.flexDirection = 'column';
+  card.style.alignItems = 'flex-start';
+  card.style.transition = 'box-shadow 0.18s';
+  card.innerHTML = `
+    <button id="close-floating-card" style="position:absolute; top:12px; right:12px; background:#eee; border:none; border-radius:50%; width:32px; height:32px; font-size:1.3rem; cursor:pointer;">&times;</button>
+    <div id="details-image-container-float" style="text-align:center; margin-bottom:1rem; width:100%"></div>
+    <h2 id="details-title-float"></h2>
+    <div id="details-description-float" style="margin-bottom:1rem;"></div>
+    <div><strong>Χώρος:</strong> <span id="details-location-float"></span></div>
+    <div><strong>Χρόνος:</strong> <span id="details-time-float"></span></div>
+    <div><strong>Τομέας:</strong> <span id="details-domain-float"></span></div>
+    <div><strong>Κατηγορία:</strong> <span id="details-category-float"></span></div>
+    <div><strong>Υποκατηγορία:</strong> <span id="details-subcategory-float"></span></div>
+    <div style="margin:0.7rem 0;"><strong>Λέξεις κλειδιά:</strong> <span id="details-keywords-float"></span></div>
+    <div style="margin-bottom:0.7rem;"><strong>Πηγές:</strong> <span id="details-sources-float"></span></div>
+  `;
+  // Fill content
+  const img = monument['εικόνα'] ? `<img id="details-main-image-float" src="${monument['εικόνα']}" alt="photo" style="max-width:320px; max-height:200px; border-radius:10px; cursor:zoom-in;">` : '';
+  card.querySelector('#details-image-container-float').innerHTML = img;
+  card.querySelector('#details-title-float').textContent = monument['τίτλος'] || '';
+  card.querySelector('#details-description-float').textContent = monument['περιγραφή'] || '';
+  card.querySelector('#details-location-float').textContent = monument['χώρος'] || '';
+  card.querySelector('#details-time-float').textContent = monument['χρόνος'] || '';
+  card.querySelector('#details-domain-float').textContent = monument['τομέας'] || '';
+  card.querySelector('#details-category-float').textContent = monument['κατηγορία'] || '';
+  card.querySelector('#details-subcategory-float').textContent = monument['υποκατηγορία'] || '';
+  card.querySelector('#details-keywords-float').textContent = (monument['λέξεις-κλειδιά'] || '').split(',').filter(Boolean).slice(0,3).join(', ');
+  card.querySelector('#details-sources-float').textContent = monument['πηγές'] || '';
+  // Close logic
+  card.querySelector('#close-floating-card').onclick = () => card.remove();
+  // Zoom image logic
+  if (monument['εικόνα']) {
+    card.querySelector('#details-main-image-float').onclick = () => {
+      let overlay = document.getElementById('zoomed-image-overlay');
+      if (!overlay) {
+        const overlayHtml = `
+          <div id="zoomed-image-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:3000; align-items:center; justify-content:center; cursor:zoom-out;">
+            <img id="zoomed-image" src="" alt="zoomed" style="max-width:90vw; max-height:90vh; border-radius:16px; box-shadow:0 4px 32px rgba(0,0,0,0.25);">
+          </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', overlayHtml);
+        overlay = document.getElementById('zoomed-image-overlay');
+        overlay.onclick = () => { overlay.style.display = 'none'; };
+      }
+      const zoomedImg = document.getElementById('zoomed-image');
+      zoomedImg.src = monument['εικόνα'];
+      overlay.style.display = 'flex';
+    };
+  }
+  // Add to map container
+  document.getElementById('map').appendChild(card);
 }
 
 // --- Map Search Functionality ---
@@ -815,32 +927,35 @@ openTimelineBtn.addEventListener('click', async () => {
   const overlay = document.getElementById('bottom-center-overlay');
   const sidePanel = document.getElementById('side-panel');
   if (!timelineLoaded) {
-    // Wait for PapaParse to load
-    while (!window.Papa) { await new Promise(r => setTimeout(r, 50)); }
-    // Fetch and parse CSV
-    const response = await fetch('data.csv');
-    const csvText = await response.text();
-    const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+    // Use the same monuments as the map (from Supabase)
+    let monuments = allMonuments;
+    if (!monuments || !monuments.length) {
+      monuments = await fetchMonuments();
+    }
     // Map to vis-timeline items
     const dateMap = {};
-    timelineData = parsed.data.map((row, idx) => {
+    timelineData = monuments.map((row, idx) => {
       let date = row['χρόνος']?.trim();
-      // If date is missing or invalid, skip
       if (!date || isNaN(Date.parse(date))) return null;
-      // Only use YYYY-MM-DD for grouping
       const dayKey = date.slice(0, 10);
       if (!dateMap[dayKey]) dateMap[dayKey] = 0;
-      // Offset by minutes for same-day events
       const offsetMinutes = dateMap[dayKey] * 5;
       dateMap[dayKey]++;
-      const offsetDate = new Date(date);
+      // Parse date as local noon to avoid timezone issues
+      const [year, month, day] = dayKey.split('-').map(Number);
+      const offsetDate = new Date(year, month - 1, day, 12, 0, 0);
       offsetDate.setMinutes(offsetDate.getMinutes() + offsetMinutes);
+      // Ensure id is preserved or generated in data
+      const dataWithId = { ...row };
+      if (!dataWithId.id) {
+        dataWithId.id = `${row['συντεταγμένες'] || ''}|${row['τίτλος'] || ''}`;
+      }
       return {
         id: idx + 1,
-        content: `<span style='font-size:0.95em;font-family:sans-serif;font-weight:500;'>${row['τίτλος'] || ''}</span>`,
+        content: '',
         start: offsetDate.toISOString(),
-        title: row['περιγραφή'] || '',
-        data: row
+        title: row['τίτλος'] || '',
+        data: dataWithId
       };
     }).filter(Boolean);
     // Create timeline
@@ -874,7 +989,9 @@ openTimelineBtn.addEventListener('click', async () => {
       tooltip: { followMouse: true, overflowMethod: 'cap' },
       orientation: 'bottom',
       template: function(item) {
-        return `<div style='background:none;border:none;box-shadow:none;padding:2px 0;'>${item.content}</div>`;
+        // Use a styled span for the custom timeline dot, with the title as a tooltip
+        const title = item && item.data && item.data['τίτλος'] ? item.data['τίτλος'] : '';
+        return `<span class="custom-timeline-dot" title="${title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;')}"></span>`;
       },
       zoomMin: 1000 * 60 * 60 * 24 * 30, // 1 month
       zoomMax: 1000 * 60 * 60 * 24 * 365 * 100, // 100 years
@@ -905,13 +1022,46 @@ openTimelineBtn.addEventListener('click', async () => {
     };
     timelineInstance = new vis.Timeline(document.getElementById('vis-timeline'), items, options);
     // Show popup on select
+    let modalOpenedByClick = false;
     timelineInstance.on('select', function (props) {
       if (!props.items.length) return;
       const item = timelineData.find(i => i.id === props.items[0]);
       if (!item) return;
-      // Use existing modal for details
-      showMonumentDetails(item.data);
+      const monument = item.data;
+      if (monument && monument['συντεταγμένες']) {
+        const [lat, lng] = monument['συντεταγμένες'].split(',').map(s => Number(s.trim()));
+        if (!isNaN(lat) && !isNaN(lng)) {
+          map.easeTo({ center: [lng, lat], zoom: 18, speed: 1.2 });
+        }
+      }
+      highlightMarkerByMonument(monument);
+      showMonumentDetails(monument);
+      modalOpenedByClick = true;
     });
+
+    // Show modal on timeline dot hover
+    timelineInstance.on('itemover', function (props) {
+      if (!props.item) return;
+      const item = timelineData.find(i => i.id === props.item);
+      if (!item) return;
+      showMonumentDetails(item.data);
+      modalOpenedByClick = false;
+    });
+    timelineInstance.on('itemout', function (props) {
+      // Hide the modal when mouse leaves the dot, only if not opened by click
+      if (!modalOpenedByClick) {
+        const modal = document.getElementById('monument-details-modal');
+        if (modal) modal.style.display = 'none';
+      }
+    });
+    // If the user closes the modal manually, reset the flag
+    const closeBtn = document.getElementById('close-details-btn');
+    if (closeBtn) {
+      closeBtn.onclick = () => {
+        document.getElementById('monument-details-modal').style.display = 'none';
+        modalOpenedByClick = false;
+      };
+    }
     timelineLoaded = true;
     timelineContainer.style.display = 'block';
     if (overlay) overlay.classList.add('overlay-up');
@@ -979,268 +1129,51 @@ window.addEventListener('DOMContentLoaded', showAppTourIfNeeded);
 // After rendering the filters section, add the data viz button and modal
 setTimeout(() => {
   const filtersSection = document.getElementById('filters-section');
-  if (filtersSection && !document.getElementById('open-data-viz-btn')) {
-    // Find the Λέξεις κλειδιά filter-group
-    const filterGroups = filtersSection.querySelectorAll('.filter-group');
-    let keywordsGroup = null;
-    filterGroups.forEach(g => {
-      if (g.textContent.includes('Λέξεις κλειδιά')) keywordsGroup = g;
-    });
-    if (keywordsGroup) {
-      const btn = document.createElement('button');
-      btn.id = 'open-data-viz-btn';
-      btn.textContent = '📊 Δεδομένα & Διαγράμματα';
-      btn.className = 'data-viz-btn';
-      btn.style.margin = '1.1rem 0 0.2rem 0';
-      btn.style.width = '100%';
-      btn.style.fontSize = '1.08rem';
-      btn.style.fontWeight = '600';
-      btn.style.background = 'linear-gradient(90deg, #ffe9b3 60%, #fbbf24 100%)';
-      btn.style.color = '#181818';
-      btn.style.border = 'none';
-      btn.style.borderRadius = '12px';
-      btn.style.padding = '0.7rem 0';
-      btn.style.cursor = 'pointer';
-      btn.style.boxShadow = '0 2px 12px rgba(44,108,223,0.10)';
-      btn.style.transition = 'background 0.18s, color 0.18s, box-shadow 0.18s';
-      btn.onmouseover = () => { btn.style.background = 'linear-gradient(90deg, #fbbf24 60%, #ffe9b3 100%)'; };
-      btn.onmouseout = () => { btn.style.background = 'linear-gradient(90deg, #ffe9b3 60%, #fbbf24 100%)'; };
-      keywordsGroup.appendChild(btn);
-    }
-    // Add the modal HTML if not present
-    if (!document.getElementById('data-viz-modal')) {
-      const modal = document.createElement('div');
-      modal.id = 'data-viz-modal';
-      modal.style.display = 'none';
-      modal.innerHTML = `
-        <div class="data-viz-backdrop"></div>
-        <div class="data-viz-dialog">
-          <button id="close-data-viz-btn" class="data-viz-close">&times;</button>
-          <h2 style="margin-bottom:1.2rem;">Διαδραστικά Διαγράμματα Δεδομένων</h2>
-          <div id="data-viz-charts" style="width:100%;max-width:900px;margin:auto;display:flex;flex-wrap:wrap;gap:2.2rem;justify-content:center;"></div>
-        </div>
-      `;
-      modal.className = 'data-viz-modal';
-      document.body.appendChild(modal);
-      // Close logic
-      const closeBtn = document.getElementById('close-data-viz-btn');
-      if (closeBtn) closeBtn.onclick = () => {
-        modal.style.display = 'none';
-        const sidePanel = document.getElementById('side-panel');
-        if (sidePanel) sidePanel.classList.remove('data-viz-open');
-      };
-      const backdrop = modal.querySelector('.data-viz-backdrop');
-      if (backdrop) backdrop.onclick = () => {
-        modal.style.display = 'none';
-        const sidePanel = document.getElementById('side-panel');
-        if (sidePanel) sidePanel.classList.remove('data-viz-open');
-      };
-    }
-    // Button click logic
-    document.getElementById('open-data-viz-btn').onclick = async () => {
-      // Load Chart.js if not loaded
-      if (!window.Chart) {
-        const chartScript = document.createElement('script');
-        chartScript.src = 'https://cdn.jsdelivr.net/npm/chart.js';
-        document.head.appendChild(chartScript);
-        await new Promise(r => { chartScript.onload = r; });
+  const sidePanel = document.getElementById('side-panel');
+  if (sidePanel && !document.getElementById('open-data-viz-btn')) {
+    const btn = document.createElement('button');
+    btn.id = 'open-data-viz-btn';
+    btn.textContent = '📊 Δεδομένα & Διαγράμματα';
+    btn.className = 'data-viz-btn';
+    btn.style.margin = '1.1rem 0 1.2rem 0';
+    btn.style.width = '100%';
+    btn.style.fontSize = '1.08rem';
+    btn.style.fontWeight = '600';
+    btn.style.background = 'linear-gradient(90deg, #ffe9b3 60%, #fbbf24 100%)';
+    btn.style.color = '#181818';
+    btn.style.border = 'none';
+    btn.style.borderRadius = '12px';
+    btn.style.padding = '0.7rem 0';
+    btn.style.cursor = 'pointer';
+    btn.style.boxShadow = '0 2px 12px rgba(44,108,223,0.10)';
+    btn.style.transition = 'background 0.18s, color 0.18s, box-shadow 0.18s';
+    btn.onmouseover = () => { btn.style.background = 'linear-gradient(90deg, #fbbf24 60%, #ffe9b3 100%)'; };
+    btn.onmouseout = () => { btn.style.background = 'linear-gradient(90deg, #ffe9b3 60%, #fbbf24 100%)'; };
+    sidePanel.appendChild(btn);
+    // Add event handler to open the data viz modal
+    btn.onclick = () => {
+      let modal = document.getElementById('data-viz-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'data-viz-modal';
+        modal.style = 'position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:4000;display:flex;align-items:center;justify-content:center;background:rgba(24,24,24,0.82);backdrop-filter:blur(2px);';
+        modal.innerHTML = `
+          <div class="data-viz-dialog" style="background:#fff;border-radius:18px;box-shadow:0 4px 32px rgba(0,0,0,0.18);padding:2.2rem 2.2rem 1.7rem 2.2rem;max-width:900px;width:96vw;max-height:90vh;overflow-y:auto;position:relative;">
+            <button id="data-viz-close" style="position:absolute;top:12px;right:12px;background:#eee;border:none;border-radius:50%;width:32px;height:32px;font-size:1.3rem;cursor:pointer;">&times;</button>
+            <div id="data-viz-charts"></div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+        document.getElementById('data-viz-close').onclick = () => { modal.style.display = 'none'; };
       }
-      // Prepare data
-      let filtered = window.filteredMonuments || window.allMonuments || [];
-      if (!Array.isArray(filtered)) filtered = [];
-      // Prepare chart data
-      const chartsDiv = document.getElementById('data-viz-charts');
-      chartsDiv.innerHTML = '';
-      // --- Drilldown and List in Same Modal ---
-      let drilldownState = { level: 'root', domain: null, category: null };
-      function showMonumentDetailsInViz(monument, backToListFn) {
-        let listDiv = document.getElementById('data-viz-list');
-        if (!listDiv) return;
-        let html = `<button id='back-to-list-btn' style='margin-bottom:1.2rem;background:#eee;border:none;border-radius:8px;padding:0.5em 1.2em;cursor:pointer;font-size:1.05em;'>← Επιστροφή στη λίστα</button>`;
-        html += `<div style='background:#fff;padding:1.5rem 1.2rem;border-radius:16px;max-width:600px;margin:auto;box-shadow:0 4px 32px rgba(0,0,0,0.10);'>`;
-        if (monument['εικόνα']) {
-          html += `<div style='text-align:center;margin-bottom:1rem;'><img src='${monument['εικόνα']}' alt='Εικόνα' style='max-width:100%;max-height:220px;border-radius:10px;'></div>`;
-        }
-        html += `<h2 style='margin-bottom:0.7rem;'>${monument['τίτλος']||''}</h2>`;
-        html += `<div style='margin-bottom:1rem;'>${monument['περιγραφή']||''}</div>`;
-        html += `<div><strong>Χώρος:</strong> ${monument['χώρος']||''}</div>`;
-        html += `<div><strong>Χρόνος:</strong> ${monument['χρόνος']||''}</div>`;
-        html += `<div><strong>Τομέας:</strong> ${monument['τομέας']||''}</div>`;
-        html += `<div><strong>Κατηγορία:</strong> ${monument['κατηγορία']||''}</div>`;
-        html += `<div style='margin:0.7rem 0;'><strong>Λέξεις κλειδιά:</strong> ${(monument['λέξεις-κλειδιά']||'').split(',').filter(Boolean).slice(0,3).join(', ')}</div>`;
-        if (monument['πηγές']) html += `<div style='margin-bottom:0.7rem;'><strong>Πηγές:</strong> ${monument['πηγές']}</div>`;
-        html += `</div>`;
-        listDiv.innerHTML = html;
-        document.getElementById('back-to-list-btn').onclick = backToListFn;
-      }
-      function showMonumentListInViz(monuments, title) {
-        let listDiv = document.getElementById('data-viz-list');
-        if (!listDiv) {
-          listDiv = document.createElement('div');
-          listDiv.id = 'data-viz-list';
-          listDiv.style = 'width:100%;max-width:700px;margin:2.2rem auto 0 auto;';
-          chartsDiv.parentElement.appendChild(listDiv);
-        }
-        let html = `<h3 style='margin-bottom:1.2rem;'>${title}</h3>`;
-        if (monuments.length === 0) {
-          html += '<div style="color:#888;">Δεν βρέθηκαν μνημεία.</div>';
-        } else {
-          html += '<ul style="list-style:none;padding:0;max-width:600px;">';
-          monuments.forEach(m => {
-            html += `<li style='margin-bottom:0.7em;padding:0.5em 0.2em;border-bottom:1px solid #eee;'><b>${m['τίτλος']||''}</b> <span style='color:#888;'>(${m['χρόνος']||''})</span> <button style='margin-left:1em;background:#fbbf24;border:none;border-radius:6px;padding:0.2em 0.7em;cursor:pointer;' data-id='${m.id}'>Λεπτομέρειες</button></li>`;
-          });
-          html += '</ul>';
-        }
-        listDiv.innerHTML = html;
-        // Attach detail button handlers
-        listDiv.querySelectorAll('button[data-id]').forEach(btn => {
-          btn.onclick = () => {
-            const m = monuments.find(x => String(x.id) === btn.getAttribute('data-id'));
-            if (m) showMonumentDetailsInViz(m, () => showMonumentListInViz(monuments, title));
-          };
-        });
-        listDiv.style.display = 'block';
-      }
-      function renderCharts(drilldown) {
-        chartsDiv.innerHTML = '';
-        // Always get the latest filtered data
-        let filtered = window.filteredMonuments || window.allMonuments || [];
-        if (!Array.isArray(filtered)) filtered = [];
-        // Filtered data for drilldown
-        let data = filtered;
-        if (drilldown.domain) data = data.filter(m => m['τομέας'] === drilldown.domain);
-        if (drilldown.category) data = data.filter(m => m['κατηγορία'] === drilldown.category);
-        // --- Refresh the data-viz-list to match the current data and drilldown ---
-        let listDiv = document.getElementById('data-viz-list');
-        if (!listDiv) {
-          listDiv = document.createElement('div');
-          listDiv.id = 'data-viz-list';
-          listDiv.style = 'width:100%;max-width:700px;margin:2.2rem auto 0 auto;';
-          chartsDiv.parentElement.appendChild(listDiv);
-        }
-        let html = `<h3 style='margin-bottom:1.2rem;'>Λίστα Μνημείων</h3>`;
-        if (data.length === 0) {
-          html += '<div style="color:#888;">Δεν βρέθηκαν μνημεία.</div>';
-        } else {
-          html += '<ul style="list-style:none;padding:0;max-width:600px;">';
-          data.forEach(m => {
-            html += `<li style='margin-bottom:0.7em;padding:0.5em 0.2em;border-bottom:1px solid #eee;'><b>${m['τίτλος']||''}</b> <span style='color:#888;'>(${m['χρόνος']||''})</span> <button style='margin-left:1em;background:#fbbf24;border:none;border-radius:6px;padding:0.2em 0.7em;cursor:pointer;' data-id='${m.id}'>Λεπτομέρειες</button></li>`;
-          });
-          html += '</ul>';
-        }
-        listDiv.innerHTML = html;
-        // Attach detail button handlers
-        listDiv.querySelectorAll('button[data-id]').forEach(btn => {
-          btn.onclick = () => {
-            const m = data.find(x => String(x.id) === btn.getAttribute('data-id'));
-            if (m) showMonumentDetailsInViz(m, () => renderCharts(drilldown));
-          };
-        });
-        listDiv.style.display = 'block';
-        // --- Domain Pie ---
-        const domains = {};
-        data.forEach(m => { if (m['τομέας']) domains[m['τομέας']] = (domains[m['τομέας']]||0)+1; });
-        chartsDiv.innerHTML += `<div style='width:320px;'><canvas id='domain-pie'></canvas><div style='text-align:center;margin-top:0.5rem;font-size:1.07em;'>Τομέας</div></div>`;
-        // --- Category Pie ---
-        const categories = {};
-        data.forEach(m => { if (m['κατηγορία']) categories[m['κατηγορία']] = (categories[m['κατηγορία']]||0)+1; });
-        chartsDiv.innerHTML += `<div style='width:320px;'><canvas id='category-pie'></canvas><div style='text-align:center;margin-top:0.5rem;font-size:1.07em;'>Κατηγορία</div></div>`;
-        // --- Year Bar ---
-        const years = {};
-        data.forEach(m => {
-          const y = String(m['χρόνος']).slice(0,4);
-          if (/^\d{4}$/.test(y)) years[y] = (years[y]||0)+1;
-        });
-        chartsDiv.innerHTML += `<div style='width:420px;'><canvas id='year-bar'></canvas><div style='text-align:center;margin-top:0.5rem;font-size:1.07em;'>Χρόνος (ανά έτος)</div></div>`;
-        // --- Back Button for Drilldown ---
-        if (drilldown.domain || drilldown.category) {
-          const backBtn = document.createElement('button');
-          backBtn.textContent = '← Επιστροφή';
-          backBtn.style = 'margin-bottom:1.2rem;background:#eee;border:none;border-radius:8px;padding:0.5em 1.2em;cursor:pointer;font-size:1.05em;';
-          backBtn.onclick = () => {
-            if (drilldown.category) {
-              drilldownState = { level: 'domain', domain: drilldown.domain, category: null };
-            } else if (drilldown.domain) {
-              drilldownState = { level: 'root', domain: null, category: null };
-            }
-            renderCharts(drilldownState);
-          };
-          chartsDiv.prepend(backBtn);
-        }
-        // --- Render Charts ---
-        setTimeout(() => {
-          const pieColors = [
-            '#fbbf24', '#22c55e', '#3b82f6', '#ef4444', '#a21caf', '#eab308',
-            '#14b8a6', '#6366f1', '#f472b6', '#f59e42', '#10b981', '#f43f5e'
-          ];
-          const domainPie = new Chart(document.getElementById('domain-pie'), {
-            type: 'pie',
-            data: { labels: Object.keys(domains), datasets: [{ data: Object.values(domains), backgroundColor: pieColors }] },
-            options: { responsive: true, plugins: { legend: { position: 'bottom' } },
-              onClick: (evt, elements) => {
-                if (elements.length) {
-                  const idx = elements[0].index;
-                  const label = domainPie.data.labels[idx];
-                  // Drilldown to domain
-                  drilldownState = { level: 'domain', domain: label, category: null };
-                  renderCharts(drilldownState);
-                  // Show list for this domain
-                  const group = filtered.filter(m => m['τομέας'] === label);
-                  showMonumentListInViz(group, `Μνημεία στον τομέα "${label}"`);
-                }
-              }
-            }
-          });
-          const categoryPie = new Chart(document.getElementById('category-pie'), {
-            type: 'pie',
-            data: { labels: Object.keys(categories), datasets: [{ data: Object.values(categories), backgroundColor: pieColors }] },
-            options: { responsive: true, plugins: { legend: { position: 'bottom' } },
-              onClick: (evt, elements) => {
-                if (elements.length) {
-                  const idx = elements[0].index;
-                  const label = categoryPie.data.labels[idx];
-                  // Drilldown to category
-                  drilldownState = { level: 'category', domain: drilldown.domain, category: label };
-                  renderCharts(drilldownState);
-                  // Show list for this category
-                  let group = filtered;
-                  if (drilldown.domain) group = group.filter(m => m['τομέας'] === drilldown.domain);
-                  group = group.filter(m => m['κατηγορία'] === label);
-                  showMonumentListInViz(group, `Μνημεία στην κατηγορία "${label}"`);
-                }
-              }
-            }
-          });
-          const yearBar = new Chart(document.getElementById('year-bar'), {
-            type: 'bar',
-            data: { labels: Object.keys(years), datasets: [{ label: 'Μνημεία', data: Object.values(years), backgroundColor: '#fbbf24' }] },
-            options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { title: { display: true, text: 'Έτος' } }, y: { title: { display: true, text: 'Μνημεία' } } },
-              onClick: (evt, elements) => {
-                if (elements.length) {
-                  const idx = elements[0].index;
-                  const label = yearBar.data.labels[idx];
-                  // Show list for this year
-                  let group = filtered;
-                  if (drilldown.domain) group = group.filter(m => m['τομέας'] === drilldown.domain);
-                  if (drilldown.category) group = group.filter(m => m['κατηγορία'] === drilldown.category);
-                  group = group.filter(m => String(m['χρόνος']).slice(0,4) === label);
-                  showMonumentListInViz(group, `Μνημεία για το έτος "${label}"`);
-                }
-              }
-            }
-          });
-        }, 100);
-      }
-      // Initial render
-      renderCharts(drilldownState);
-      document.getElementById('data-viz-modal').style.display = 'flex';
-      // Hide the backdrop
-      const backdrop = document.querySelector('#data-viz-modal .data-viz-backdrop');
-      if (backdrop) backdrop.style.display = 'none';
-      // Make side panel usable
-      const sidePanel = document.getElementById('side-panel');
-      if (sidePanel) sidePanel.classList.add('data-viz-open');
+      modal.style.display = 'flex';
+      renderCharts(window.drilldownState || { level: 'root', domain: null, category: null });
     };
+    // ... existing code for modal ...
+    const devCredit = document.createElement('div');
+    devCredit.textContent = 'Developed by Jason Kaskamanidis 2025';
+    devCredit.style = 'margin:0.7rem 0 3.5rem 0; text-align:center; font-size:0.97em; color:#8a8a8a;';
+    sidePanel.insertBefore(devCredit, btn.nextSibling);
   }
 }, 500);
 
