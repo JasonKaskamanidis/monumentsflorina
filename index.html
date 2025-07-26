@@ -85,6 +85,26 @@
       letter-spacing: 0.02em;
       animation: ctaPulse 2.2s infinite alternate;
       text-shadow: 0 2px 12px #0008;
+      cursor: pointer;
+      padding: 1.1rem 2rem;
+      border-radius: 16px;
+      border: none;
+      background: linear-gradient(90deg, #f3e9d2 60%, #ffe9b3 100%);
+      color: #181818;
+      transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
+      box-shadow: 0 2px 12px rgba(44,108,223,0.10);
+      outline: none;
+      letter-spacing: 0.01em;
+      will-change: transform;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .cta-anim:hover, .cta-anim:focus {
+      background: linear-gradient(90deg, #ffe9b3 60%, #f3e9d2 100%);
+      transform: translateY(-2px) scale(1.045);
+      box-shadow: 0 8px 32px rgba(44,108,223,0.18);
     }
     @keyframes ctaPulse {
       0% { opacity: 0.7; transform: scale(1); }
@@ -158,19 +178,47 @@
       font-weight: 500;
       animation: fadeIn 1.2s 0.7s both;
     }
+    .editor-link {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 200;
+      padding: 0.5rem 1rem;
+      background: rgba(24,24,24,0.6);
+      color: #ffe9b3;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border: 1px solid rgba(255,233,179,0.3);
+      transition: all 0.2s ease;
+      backdrop-filter: blur(4px);
+      opacity: 0.8;
+    }
+    .editor-link:hover {
+      opacity: 1;
+      background: rgba(24,24,24,0.8);
+      border-color: rgba(255,233,179,0.5);
+      transform: translateY(-1px);
+    }
+    @media (max-width: 600px) {
+      .editor-link {
+        top: 0.5rem;
+        right: 0.5rem;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="parallax-bg" id="parallax-bg"></div>
   <div class="dark-overlay"></div>
+  <a href="login.html" class="editor-link">Συντάκτης</a>
   <div class="center-card">
     <div class="main-title">Κρυμμένη Ιστορία της Φλώρινας</div>
     <div class="subtitle">Ανακάλυψε, εξερεύνησε και φιλτράρισε τα μνημεία και τα μυστικά της Φλώρινας. Είτε είσαι επισκέπτης είτε μέλος, η εφαρμογή, σου επιτρέπει να αλληλεπιδράσεις με την πλούσια ιστορία της περιοχής με έναν σύγχρονο, ψηφιακό τρόπο.</div>
-    <div class="cta-anim">Ξεκίνησε το ταξίδι σου</div>
-    <div class="action-buttons">
-      <a href="login.html" class="action-btn visitor-btn">Συντάκτης</a>
-      <a href="map.html?visitor=1" class="action-btn visitor-btn">Επισκέπτης</a>
-    </div>
+    <a href="map.html?visitor=1" class="cta-anim">Ξεκίνησε το ταξίδι σου</a>
   </div>
   <footer class="footer">
     Developed by Jason Kaskamanidis @2025

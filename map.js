@@ -244,10 +244,34 @@ function populateSidePanelFilters(monuments) {
   };
   // Τομέας
   const domains = getUnique('τομέας');
-  document.getElementById('domain-dropdown-menu').innerHTML = domains.map(val => `<label><input type="checkbox" name="domain-filter" value="${val}"> ${val}</label>`).join('<br>');
+  // Add all available domains including the new "Φυσικά"
+  const allDomains = [
+    'Ανθρωπογενή',
+    'Φυσικά'
+  ];
+  // Combine existing domains with all available ones and remove duplicates
+  const combinedDomains = Array.from(new Set([...domains, ...allDomains])).sort();
+  document.getElementById('domain-dropdown-menu').innerHTML = combinedDomains.map(val => `<label><input type="checkbox" name="domain-filter" value="${val}"> ${val}</label>`).join('<br>');
   // Κατηγορία
   const categories = getUnique('κατηγορία');
-  document.getElementById('category-dropdown-menu').innerHTML = categories.map(val => `<label><input type="checkbox" name="category-filter" value="${val}"> ${val}</label>`).join('<br>');
+  // Add all available categories from the database constraint
+  const allCategories = [
+    'Μνημεία',
+    'γεγονότα',
+    'διαδρομές', 
+    'κατασκευές',
+    'κτίρια',
+    'ονοματοθεσίες',
+    'περιοχές',
+    'πρόσωπα',
+    'γεωμορφολογία',
+    'πανίδα',
+    'ύδατα',
+    'χλωρίδα'
+  ];
+  // Combine existing categories with all available ones and remove duplicates
+  const combinedCategories = Array.from(new Set([...categories, ...allCategories])).sort();
+  document.getElementById('category-dropdown-menu').innerHTML = combinedCategories.map(val => `<label><input type="checkbox" name="category-filter" value="${val}"> ${val}</label>`).join('<br>');
   // Υποκατηγορία
   const subcategories = getUnique('υποκατηγορία');
   document.getElementById('subcategory-dropdown-menu').innerHTML = subcategories.map(val => `<label><input type="checkbox" name="subcategory-filter" value="${val}"> ${val}</label>`).join('<br>');
@@ -625,12 +649,38 @@ function populateMonumentFormDropdowns(selected = {}) {
   const categories = getUnique('κατηγορία');
   const subcategories = getUnique('υποκατηγορία');
 
+  // Add all available domains including the new "Φυσικά"
+  const allDomains = [
+    'Ανθρωπογενή',
+    'Φυσικά'
+  ];
+  // Combine existing domains with all available ones and remove duplicates
+  const combinedDomains = Array.from(new Set([...domains, ...allDomains])).sort();
+
+  // Add all available categories from the database constraint
+  const allCategories = [
+    'Μνημεία',
+    'γεγονότα',
+    'διαδρομές', 
+    'κατασκευές',
+    'κτίρια',
+    'ονοματοθεσίες',
+    'περιοχές',
+    'πρόσωπα',
+    'γεωμορφολογία',
+    'πανίδα',
+    'ύδατα',
+    'χλωρίδα'
+  ];
+  // Combine existing categories with all available ones and remove duplicates
+  const combinedCategories = Array.from(new Set([...categories, ...allCategories])).sort();
+
   const domainSelect = document.getElementById('form-domain-select');
   const categorySelect = document.getElementById('form-category-select');
   const subcategorySelect = document.getElementById('form-subcategory-select');
 
-  domainSelect.innerHTML = '<option value="">-- Επιλέξτε --</option>' + domains.map(val => `<option value="${val}"${selected['τομέας'] === val ? ' selected' : ''}>${val}</option>`).join('');
-  categorySelect.innerHTML = '<option value="">-- Επιλέξτε --</option>' + categories.map(val => `<option value="${val}"${selected['κατηγορία'] === val ? ' selected' : ''}>${val}</option>`).join('');
+  domainSelect.innerHTML = '<option value="">-- Επιλέξτε --</option>' + combinedDomains.map(val => `<option value="${val}"${selected['τομέας'] === val ? ' selected' : ''}>${val}</option>`).join('');
+  categorySelect.innerHTML = '<option value="">-- Επιλέξτε --</option>' + combinedCategories.map(val => `<option value="${val}"${selected['κατηγορία'] === val ? ' selected' : ''}>${val}</option>`).join('');
   subcategorySelect.innerHTML = '<option value="">-- Επιλέξτε --</option>' + subcategories.map(val => `<option value="${val}"${selected['υποκατηγορία'] === val ? ' selected' : ''}>${val}</option>`).join('');
 }
 
@@ -1169,7 +1219,7 @@ setTimeout(() => {
       modal.style.display = 'flex';
       renderCharts(window.drilldownState || { level: 'root', domain: null, category: null });
     };
-    // ... existing code for modal ...
+    // Add the developer credit below the data viz button
     const devCredit = document.createElement('div');
     devCredit.textContent = 'Developed by Jason Kaskamanidis 2025';
     devCredit.style = 'margin:0.7rem 0 3.5rem 0; text-align:center; font-size:0.97em; color:#8a8a8a;';
@@ -1179,16 +1229,19 @@ setTimeout(() => {
 
 // Place these at the top-level scope, not inside any function
 let drilldownState = { level: 'root', domain: null, category: null };
+
 function renderCharts(drilldown) {
   // Always get the latest filtered data
   let filtered = window.filteredMonuments || window.allMonuments || [];
   if (!Array.isArray(filtered)) filtered = [];
   const chartsDiv = document.getElementById('data-viz-charts');
   chartsDiv.innerHTML = '';
+  
   // Filtered data for drilldown
   let data = filtered;
   if (drilldown.domain) data = data.filter(m => m['τομέας'] === drilldown.domain);
   if (drilldown.category) data = data.filter(m => m['κατηγορία'] === drilldown.category);
+  
   // --- Refresh the data-viz-list to match the current data and drilldown ---
   let listDiv = document.getElementById('data-viz-list');
   if (!listDiv) {
@@ -1197,6 +1250,7 @@ function renderCharts(drilldown) {
     listDiv.style = 'width:100%;max-width:700px;margin:2.2rem auto 0 auto;';
     chartsDiv.parentElement.appendChild(listDiv);
   }
+  
   let html = `<h3 style='margin-bottom:1.2rem;'>Λίστα Μνημείων</h3>`;
   if (data.length === 0) {
     html += '<div style="color:#888;">Δεν βρέθηκαν μνημεία.</div>';
@@ -1208,6 +1262,7 @@ function renderCharts(drilldown) {
     html += '</ul>';
   }
   listDiv.innerHTML = html;
+  
   // Attach detail button handlers
   listDiv.querySelectorAll('button[data-id]').forEach(btn => {
     btn.onclick = () => {
@@ -1216,14 +1271,17 @@ function renderCharts(drilldown) {
     };
   });
   listDiv.style.display = 'block';
+  
   // --- Domain Pie ---
   const domains = {};
   data.forEach(m => { if (m['τομέας']) domains[m['τομέας']] = (domains[m['τομέας']]||0)+1; });
   chartsDiv.innerHTML += `<div style='width:320px;'><canvas id='domain-pie'></canvas><div style='text-align:center;margin-top:0.5rem;font-size:1.07em;'>Τομέας</div></div>`;
+  
   // --- Category Pie ---
   const categories = {};
   data.forEach(m => { if (m['κατηγορία']) categories[m['κατηγορία']] = (categories[m['κατηγορία']]||0)+1; });
   chartsDiv.innerHTML += `<div style='width:320px;'><canvas id='category-pie'></canvas><div style='text-align:center;margin-top:0.5rem;font-size:1.07em;'>Κατηγορία</div></div>`;
+  
   // --- Year Bar ---
   const years = {};
   data.forEach(m => {
@@ -1231,6 +1289,7 @@ function renderCharts(drilldown) {
     if (/^\d{4}$/.test(y)) years[y] = (years[y]||0)+1;
   });
   chartsDiv.innerHTML += `<div style='width:420px;'><canvas id='year-bar'></canvas><div style='text-align:center;margin-top:0.5rem;font-size:1.07em;'>Χρόνος (ανά έτος)</div></div>`;
+  
   // --- Back Button for Drilldown ---
   if (drilldown.domain || drilldown.category) {
     const backBtn = document.createElement('button');
@@ -1246,12 +1305,14 @@ function renderCharts(drilldown) {
     };
     chartsDiv.prepend(backBtn);
   }
+  
   // --- Render Charts ---
   setTimeout(() => {
     const pieColors = [
       '#fbbf24', '#22c55e', '#3b82f6', '#ef4444', '#a21caf', '#eab308',
       '#14b8a6', '#6366f1', '#f472b6', '#f59e42', '#10b981', '#f43f5e'
     ];
+    
     const domainPie = new Chart(document.getElementById('domain-pie'), {
       type: 'pie',
       data: { labels: Object.keys(domains), datasets: [{ data: Object.values(domains), backgroundColor: pieColors }] },
@@ -1270,6 +1331,7 @@ function renderCharts(drilldown) {
         }
       }
     });
+    
     const categoryPie = new Chart(document.getElementById('category-pie'), {
       type: 'pie',
       data: { labels: Object.keys(categories), datasets: [{ data: Object.values(categories), backgroundColor: pieColors }] },
@@ -1290,6 +1352,7 @@ function renderCharts(drilldown) {
         }
       }
     });
+    
     const yearBar = new Chart(document.getElementById('year-bar'), {
       type: 'bar',
       data: { labels: Object.keys(years), datasets: [{ label: 'Μνημεία', data: Object.values(years), backgroundColor: '#fbbf24' }] },
@@ -1310,5 +1373,33 @@ function renderCharts(drilldown) {
     });
   }, 100);
 }
+
+function showMonumentDetailsInViz(monument, callback) {
+  // Create a simple modal for monument details in the viz context
+  const modal = document.createElement('div');
+  modal.style = 'position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:5000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);';
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:12px;padding:1.5rem;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;">
+      <h3>${monument['τίτλος'] || ''}</h3>
+      <p><strong>Περιγραφή:</strong> ${monument['περιγραφή'] || ''}</p>
+      <p><strong>Χρόνος:</strong> ${monument['χρόνος'] || ''}</p>
+      <p><strong>Κατηγορία:</strong> ${monument['κατηγορία'] || ''}</p>
+      <button onclick="this.parentElement.parentElement.remove()" style="margin-top:1rem;background:#fbbf24;border:none;border-radius:6px;padding:0.5rem 1rem;cursor:pointer;">Κλείσιμο</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      modal.remove();
+      if (callback) callback();
+    }
+  };
+}
+
+function showMonumentListInViz(monuments, title) {
+  // This function can be expanded to show a more detailed list
+  console.log(title, monuments);
+}
+
 window.renderCharts = renderCharts;
 window.drilldownState = drilldownState;
