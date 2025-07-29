@@ -47,6 +47,1733 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    
+    /* Gallery View Styles */
+    #gallery-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: var(--background);
+      z-index: 2;
+      display: none;
+      overflow-y: auto;
+      padding: 2rem;
+      box-sizing: border-box;
+    }
+    
+    /* Adjust gallery layout when side panel is open */
+    #gallery-container.with-side-panel {
+      left: 400px;
+      width: calc(100vw - 400px);
+    }
+    
+    @media (max-width: 768px) {
+      #gallery-container.with-side-panel {
+        left: 300px;
+        width: calc(100vw - 300px);
+      }
+    }
+    
+    @media (max-width: 480px) {
+      #gallery-container.with-side-panel {
+        left: 280px;
+        width: calc(100vw - 280px);
+      }
+    }
+    
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    
+    /* Adjust grid for side panel */
+    #gallery-container.with-side-panel .gallery-grid {
+      max-width: none;
+      padding: 0;
+    }
+    
+    .monument-card {
+      background: var(--background-card);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .monument-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 64px 0 rgba(0,0,0,0.3);
+    }
+    
+    .monument-card-image {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+      background: linear-gradient(45deg, #f3e9d2, #ffe9b3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dark);
+      font-weight: 600;
+    }
+    
+    .monument-card-content {
+      padding: 1.5rem;
+    }
+    
+    .monument-card-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.8rem;
+      line-height: 1.3;
+    }
+    
+    .monument-card-description {
+      color: var(--text);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 1rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .monument-card-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+      font-size: 0.85rem;
+    }
+    
+    .monument-card-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    
+    .monument-card-meta-label {
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.75rem;
+    }
+    
+    .monument-card-meta-value {
+      color: var(--text-strong);
+      font-weight: 500;
+    }
+    
+    .gallery-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: var(--primary);
+      padding: 0 1rem;
+    }
+    
+    .gallery-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 1.5rem;
+      gap: 1rem;
+    }
+    
+    .view-toggle {
+      display: flex;
+      background: var(--background-card);
+      border-radius: 12px;
+      padding: 4px;
+      box-shadow: var(--box-shadow);
+    }
+    
+    .view-btn {
+      background: none;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .view-btn.active {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .view-btn:hover:not(.active) {
+      background: rgba(251, 191, 36, 0.1);
+      color: var(--primary);
+    }
+    
+    /* List View Styles */
+    .gallery-list {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    
+    .monument-list-item {
+      background: var(--background-card);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      margin-bottom: 1rem;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      display: flex;
+    }
+    
+    .monument-list-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    }
+    
+    .monument-list-image {
+      width: 200px;
+      height: 150px;
+      object-fit: cover;
+      background: linear-gradient(45deg, #f3e9d2, #ffe9b3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dark);
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    
+    .monument-list-content {
+      flex: 1;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    
+    .monument-list-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .monument-list-description {
+      color: var(--text);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 1rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .monument-list-meta {
+      display: flex;
+      gap: 2rem;
+      font-size: 0.85rem;
+    }
+    
+    .monument-list-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    
+    .monument-list-meta-label {
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.7rem;
+    }
+    
+    .monument-list-meta-value {
+      color: var(--text-strong);
+      font-weight: 500;
+    }
+    
+    /* Slideshow Styles */
+    .gallery-slideshow {
+      position: relative;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    
+    .slideshow-container {
+      position: relative;
+      background: var(--background-card);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      overflow: hidden;
+      aspect-ratio: 16/9;
+    }
+    
+    .slideshow-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .slideshow-slide.active {
+      opacity: 1;
+    }
+    
+    .slideshow-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .slideshow-content {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.8));
+      color: white;
+      padding: 2rem;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+    }
+    
+    .slideshow-slide:hover .slideshow-content {
+      transform: translateY(0);
+    }
+    
+    .slideshow-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    
+    .slideshow-description {
+      font-size: 1rem;
+      line-height: 1.5;
+      opacity: 0.9;
+    }
+    
+    .slideshow-controls {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 1rem;
+      pointer-events: none;
+    }
+    
+    .slideshow-btn {
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      transition: all 0.2s ease;
+      pointer-events: all;
+    }
+    
+    .slideshow-btn:hover {
+      background: rgba(0,0,0,0.8);
+      transform: scale(1.1);
+    }
+    
+    .slideshow-indicators {
+      position: absolute;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .slideshow-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .slideshow-indicator.active {
+      background: white;
+      transform: scale(1.2);
+    }
+    
+    .slideshow-info {
+      text-align: center;
+      margin-top: 1rem;
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+    
+
+    
+    /* Compare Mode Styles */
+    .gallery-compare {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    
+    .compare-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: var(--text);
+    }
+    
+    .compare-instructions {
+      background: var(--background-card);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+    
+    .compare-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .compare-card {
+      background: var(--background-card);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      overflow: hidden;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+    
+    .compare-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    }
+    
+    .compare-card.selected {
+      border: 3px solid var(--primary);
+      transform: translateY(-4px);
+    }
+    
+    .compare-card.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--primary);
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    
+    .compare-card.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .compare-card.disabled:hover {
+      transform: none;
+    }
+    
+    .compare-comparison {
+      display: none;
+      margin-top: 2rem;
+    }
+    
+    .compare-comparison.active {
+      display: block;
+    }
+    
+    .compare-back-btn {
+      background: var(--text-muted);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      margin-bottom: 2rem;
+    }
+    
+    .compare-back-btn:hover {
+      background: var(--text);
+      transform: translateY(-1px);
+    }
+    
+    .compare-items-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+    
+    .compare-item {
+      background: var(--background-card);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      padding: 1.5rem;
+    }
+    
+    .compare-item-header {
+      text-align: center;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .compare-item-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .compare-item-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+    }
+    
+    .compare-item-details {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    
+    .compare-detail-section {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1rem;
+    }
+    
+    .compare-section-label {
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.5px;
+    }
+    
+    .compare-section-value {
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+    
+    .compare-fields-section {
+      display: grid;
+      gap: 0.8rem;
+    }
+    
+    .compare-detail-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .compare-detail-label {
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 0.8rem;
+    }
+    
+    .compare-detail-value {
+      color: var(--text-strong);
+      font-weight: 500;
+      text-align: right;
+      max-width: 60%;
+    }
+    
+    .compare-actions {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .compare-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    
+    .compare-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+    
+    .compare-btn:disabled {
+      background: var(--text-muted);
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    /* Map Preview Styles */
+    .monument-card-image {
+      position: relative;
+    }
+    
+    .map-preview-container {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .map-preview-container:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+    }
+    
+    .map-preview-container:active {
+      transform: scale(0.95);
+    }
+    
+    /* Adjust header for side panel */
+    #gallery-container.with-side-panel .gallery-header {
+      padding: 0;
+    }
+    
+    .gallery-title {
+      font-size: 2.5rem;
+      font-weight: 900;
+      margin-bottom: 0.5rem;
+    }
+    
+    .gallery-subtitle {
+      font-size: 1.1rem;
+      color: var(--text);
+      opacity: 0.8;
+    }
+    
+    @media (max-width: 768px) {
+      .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+        padding: 0 1rem;
+      }
+      
+      .monument-card-image {
+        height: 200px;
+      }
+      
+      .monument-card-content {
+        padding: 1.2rem;
+      }
+      
+      .gallery-title {
+        font-size: 2rem;
+      }
+    }
+
+    /* Admin Panel Styles */
+    #admin-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.8);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(8px);
+    }
+    
+    .admin-panel-container {
+      background: var(--background-card);
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      max-width: 90vw;
+      max-height: 90vh;
+      width: 1200px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border-color);
+    }
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--background-card);
+      color: var(--text);
+    }
+
+    .admin-header h2 {
+      color: var(--text);
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+        .admin-close-btn {
+      background: var(--background-input);
+      color: var(--text);
+      border: 1px solid var(--border-color);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.2s ease;
+    }
+    
+    .admin-close-btn:hover {
+      background: var(--border-color);
+      color: var(--text);
+    }
+
+    .admin-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--background-card);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+        .admin-tab {
+      background: transparent;
+      border: none;
+      padding: 1rem 1.5rem;
+      border-radius: 0;
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+      border-bottom: 2px solid transparent;
+    }
+    
+    .admin-tab.active {
+      background: transparent;
+      color: var(--text);
+      border-bottom: 2px solid var(--primary);
+      font-weight: 600;
+    }
+    
+    .admin-tab:hover:not(.active) {
+      background: transparent;
+      color: var(--text);
+    }
+
+        .admin-tab-content {
+      display: none;
+      padding: 2rem;
+      max-height: calc(90vh - 200px);
+      overflow-y: auto;
+      flex: 1;
+    }
+    
+    .admin-tab-content.active {
+      display: block;
+    }
+
+        .admin-section {
+      margin-bottom: 2rem;
+      background: transparent;
+      border-radius: 0;
+      padding: 1.5rem 0;
+      border: none;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .admin-section h3 {
+      color: var(--text);
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+      text-transform: none;
+      letter-spacing: normal;
+    }
+
+    .bulk-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .bulk-controls .admin-btn {
+      background: #f8f9fa;
+      color: #495057;
+      border: 1px solid #dee2e6;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 400;
+      font-size: 0.8rem;
+      transition: all 0.15s ease;
+    }
+
+    .bulk-controls .admin-btn:hover {
+      background: #e9ecef;
+      border-color: #adb5bd;
+      transform: none;
+    }
+
+    .bulk-controls .admin-btn:disabled {
+      background: #f8f9fa;
+      color: #adb5bd;
+      border-color: #dee2e6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .bulk-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .bulk-actions .admin-btn {
+      background: #f8f9fa;
+      color: #495057;
+      border: 1px solid #dee2e6;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 400;
+      font-size: 0.8rem;
+      transition: all 0.15s ease;
+    }
+
+    .bulk-actions .admin-btn:hover:not(.danger) {
+      background: #e9ecef;
+      border-color: #adb5bd;
+      transform: none;
+    }
+
+    .bulk-actions .admin-btn.danger {
+      background: #f8f9fa;
+      color: #dc3545;
+      border-color: #dc3545;
+    }
+
+    .bulk-actions .admin-btn.danger:hover {
+      background: #dc3545;
+      color: white;
+      transform: none;
+    }
+
+    .bulk-actions .admin-select {
+      background: var(--background-input);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: var(--text);
+      cursor: pointer;
+      box-shadow: var(--box-shadow);
+    }
+
+    .bulk-actions .admin-select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .bulk-actions .admin-btn.disabled {
+      background: var(--text-muted);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .bulk-monuments-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 0.5rem;
+      max-height: 350px;
+      overflow-y: auto;
+      padding: 1rem 0;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background: var(--background-input);
+    }
+
+        .bulk-monument-item {
+      border-radius: 8px;
+      background: var(--background-card);
+      transition: all 0.2s ease;
+      border: 1px solid var(--border-color);
+      margin-bottom: 0.5rem;
+      overflow: hidden;
+    }
+    
+    .bulk-monument-header {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 1rem;
+      cursor: pointer;
+      background: var(--background-card);
+      transition: all 0.2s ease;
+    }
+    
+    .bulk-monument-header:hover {
+      background: var(--background-input);
+    }
+    
+    .bulk-monument-name {
+      flex: 1;
+    }
+    
+    .monument-title {
+      font-weight: 400;
+      font-size: 0.9rem;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+    
+    .monument-category {
+      font-weight: 400;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    
+    .monument-user {
+      font-weight: 400;
+      font-size: 0.75rem;
+      color: #666;
+      margin-top: 0.1rem;
+      font-style: italic;
+    }
+    
+    .bulk-monument-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+    
+    .bulk-monument-toggle:hover {
+      background: var(--border-color);
+    }
+    
+    .toggle-icon {
+      font-size: 0.8rem;
+      transition: transform 0.2s ease;
+    }
+    
+    .bulk-monument-details {
+      background: var(--background-input);
+      border-top: 1px solid var(--border-color);
+      padding: 1.5rem;
+    }
+    
+    .monument-edit-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+    
+    .form-group label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+    
+    .edit-input {
+      padding: 0.6rem;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background: var(--background-card);
+      color: var(--text);
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+    
+    .edit-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.1);
+    }
+    
+    .edit-input[type="textarea"] {
+      resize: vertical;
+      min-height: 80px;
+    }
+    
+    .edit-actions {
+      display: flex;
+      gap: 0.8rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-color);
+    }
+    
+         .edit-actions .admin-btn {
+       flex: 1;
+       padding: 0.4rem 0.8rem;
+       font-size: 0.8rem;
+       background: #f8f9fa;
+       color: #495057;
+       border: 1px solid #dee2e6;
+       border-radius: 4px;
+       font-weight: 400;
+       transition: all 0.15s ease;
+     }
+     
+     .edit-actions .admin-btn:hover {
+       background: #e9ecef;
+       border-color: #adb5bd;
+       transform: none;
+     }
+     
+     .edit-actions .admin-btn.danger {
+       background: #f8f9fa;
+       color: #dc3545;
+       border-color: #dc3545;
+     }
+     
+     .edit-actions .admin-btn.danger:hover {
+       background: #dc3545;
+       color: white;
+     }
+     
+     .bulk-controls-top {
+       display: flex;
+       align-items: center;
+       gap: 0.8rem;
+       margin-bottom: 1rem;
+     }
+     
+     .bulk-search {
+       display: flex;
+       gap: 0.8rem;
+       margin-bottom: 1rem;
+     }
+     
+     .admin-search-input {
+       flex: 1;
+       padding: 0.6rem;
+       border: 1px solid var(--border-color);
+       border-radius: 6px;
+       background: var(--background-card);
+       color: var(--text);
+       font-size: 0.9rem;
+     }
+     
+     .admin-search-input:focus {
+       outline: none;
+       border-color: var(--primary);
+     }
+     
+     #bulk-filter-category {
+       background: white !important;
+       border: 1px solid #ddd !important;
+       color: #333 !important;
+       font-weight: normal !important;
+     }
+     
+     #bulk-filter-category:focus {
+       outline: none !important;
+       border-color: #999 !important;
+     }
+     
+     /* Modal Styles */
+     .modal-overlay {
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100vw;
+       height: 100vh;
+       background: rgba(0, 0, 0, 0.3);
+       z-index: 3000;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+     }
+     
+     .modal-content {
+       background: #fafafa;
+       border-radius: 12px;
+       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+       max-width: 90vw;
+       max-height: 90vh;
+       width: 800px;
+       overflow: hidden;
+       display: flex;
+       flex-direction: column;
+       border: 1px solid #e0e0e0;
+     }
+     
+     .modal-header {
+       padding: 24px 24px 20px 24px;
+       border-bottom: 1px solid #e8e8e8;
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+       color: #333;
+     }
+     
+     .modal-header h3 {
+       margin: 0;
+       color: #333;
+       font-size: 20px;
+       font-weight: 600;
+       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+     }
+     
+     .modal-close {
+       background: rgba(0, 0, 0, 0.1);
+       border: none;
+       font-size: 20px;
+       cursor: pointer;
+       color: #333;
+       padding: 0;
+       width: 32px;
+       height: 32px;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       border-radius: 6px;
+       transition: all 0.2s ease;
+     }
+     
+     .modal-close:hover {
+       background: rgba(0, 0, 0, 0.2);
+       transform: scale(1.05);
+     }
+     
+     .modal-body {
+       padding: 24px;
+       overflow-y: auto;
+       flex: 1;
+       background: #fafafa;
+     }
+     
+     .modal-body label {
+       color: #555;
+       font-weight: 500;
+       font-size: 14px;
+       margin-bottom: 6px;
+       display: block;
+     }
+     
+     .modal-body .edit-input {
+       background: white;
+       border: 2px solid #e8e8e8;
+       border-radius: 8px;
+       padding: 12px 16px;
+       font-size: 14px;
+       color: #333;
+       transition: all 0.2s ease;
+       width: 100%;
+       box-sizing: border-box;
+     }
+     
+     .modal-body .edit-input:focus {
+       outline: none;
+       border-color: #667eea;
+       box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+     }
+     
+     #edit-category,
+     #edit-subcategory,
+     #edit-domain {
+       background: white !important;
+       border: 1px solid #ddd !important;
+       color: #333 !important;
+       font-weight: normal !important;
+     }
+     
+     #edit-category:focus,
+     #edit-subcategory:focus,
+     #edit-domain:focus {
+       outline: none !important;
+       border-color: #999 !important;
+       box-shadow: none !important;
+     }
+     
+     #edit-category option,
+     #edit-subcategory option,
+     #edit-domain option {
+       background: white !important;
+       color: #333 !important;
+       font-weight: normal !important;
+     }
+     
+     .modal-body .edit-input::placeholder {
+       color: #999;
+     }
+     
+     .modal-actions {
+       display: flex;
+       gap: 12px;
+       justify-content: flex-end;
+       margin-top: 24px;
+       padding: 20px 24px;
+       border-top: 1px solid #e8e8e8;
+       background: #f5f5f5;
+     }
+     
+          .modal-actions .admin-btn {
+       padding: 8px 16px;
+       border: 1px solid #dee2e6;
+       border-radius: 4px;
+       font-weight: 400;
+       font-size: 13px;
+       cursor: pointer;
+       transition: all 0.15s ease;
+       display: flex;
+       align-items: center;
+       gap: 6px;
+       background: #f8f9fa;
+       color: #495057;
+     }
+     
+     .modal-actions .admin-btn:not(.danger):not(.secondary) {
+       background: #f8f9fa;
+       color: #495057;
+       border-color: #dee2e6;
+     }
+     
+     .modal-actions .admin-btn:not(.danger):not(.secondary):hover {
+       background: #e9ecef;
+       border-color: #adb5bd;
+       transform: none;
+     }
+     
+     .modal-actions .admin-btn.danger {
+       background: #f8f9fa;
+       color: #dc3545;
+       border-color: #dc3545;
+     }
+     
+     .modal-actions .admin-btn.danger:hover {
+       background: #dc3545;
+       color: white;
+       transform: none;
+     }
+     
+     .modal-actions .admin-btn.secondary {
+       background: #f8f9fa;
+       color: #6c757d;
+       border-color: #dee2e6;
+     }
+     
+     .modal-actions .admin-btn.secondary:hover {
+       background: #e9ecef;
+       border-color: #adb5bd;
+       transform: none;
+     }
+     
+     /* Modal Responsive */
+     @media (max-width: 768px) {
+       .modal-content {
+         width: 95vw;
+         max-height: 95vh;
+         border-radius: 8px;
+       }
+       
+       .modal-header {
+         padding: 16px 20px 14px 20px;
+       }
+       
+       .modal-header h3 {
+         font-size: 18px;
+       }
+       
+       .modal-body {
+         padding: 16px 20px;
+       }
+       
+       .modal-actions {
+         padding: 16px 20px;
+         flex-wrap: wrap;
+         gap: 8px;
+       }
+       
+       .modal-actions .admin-btn {
+         padding: 10px 16px;
+         font-size: 13px;
+         flex: 1;
+         min-width: 120px;
+       }
+     }
+ 
+     .bulk-monument-checkbox {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--primary);
+    }
+
+    .bulk-monument-name {
+      flex: 1;
+      font-weight: 400;
+      color: var(--text);
+    }
+
+    .validation-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: var(--background-input);
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+    }
+
+    .validation-stats h4 {
+      color: var(--primary);
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+    }
+
+    .validation-stats p {
+      font-size: 0.9rem;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .validation-stats .value {
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .validation-issues {
+      background: var(--background-input);
+      border-radius: 6px;
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+    }
+
+    .validation-issues h4 {
+      color: var(--primary);
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+    }
+
+    .validation-issues p {
+      font-size: 0.9rem;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+    
+    .validation-issues .validation-summary {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+    
+    .validation-issues .validation-summary .error-count {
+      color: #dc3545;
+      font-weight: 500;
+    }
+    
+    .validation-issues .validation-summary .warning-count {
+      color: #ffc107;
+      font-weight: 500;
+    }
+
+    .validation-issues .issue-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.7rem 1rem;
+      border-radius: 6px;
+      background: var(--background-input);
+      margin-bottom: 0.5rem;
+      border: 1px solid var(--border-color);
+      transition: all 0.2s ease;
+    }
+    
+    .validation-issues .issue-item:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transform: translateY(-1px);
+    }
+
+    .validation-issues .issue-item.warning {
+      background: var(--warning-light);
+      border-color: var(--warning);
+    }
+
+    .validation-issues .issue-item.error {
+      background: var(--danger-light);
+      border-color: var(--danger);
+    }
+
+    .validation-issues .issue-item .issue-type {
+      font-weight: 600;
+      color: var(--primary);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .validation-issues .issue-item .issue-message {
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+    
+    .validation-issues .issue-item .issue-content {
+      flex: 1;
+      margin-right: 1rem;
+    }
+    
+    .validation-issues .issue-item .admin-btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.8rem;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    
+    .validation-issues .issue-item .admin-btn:hover {
+      background: #5a67d8;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+    }
+
+    .export-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .export-controls .admin-btn {
+      background: #f8f9fa;
+      color: #495057;
+      border: 1px solid #dee2e6;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 400;
+      font-size: 0.8rem;
+      transition: all 0.15s ease;
+    }
+
+    .export-controls .admin-btn:hover {
+      background: #e9ecef;
+      border-color: #adb5bd;
+      transform: none;
+    }
+
+    .export-controls .admin-btn:disabled {
+      background: #f8f9fa;
+      color: #adb5bd;
+      border-color: #dee2e6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .import-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .import-controls .admin-file-input {
+      display: none;
+    }
+
+    .import-controls .admin-btn {
+      background: #f8f9fa;
+      color: #495057;
+      border: 1px solid #dee2e6;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 400;
+      font-size: 0.8rem;
+      transition: all 0.15s ease;
+    }
+
+    .import-controls .admin-btn:hover {
+      background: #e9ecef;
+      border-color: #adb5bd;
+      transform: none;
+    }
+
+    .import-controls .admin-btn:disabled {
+      background: #f8f9fa;
+      color: #adb5bd;
+      border-color: #dee2e6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .import-preview {
+      background: var(--background-input);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+        .admin-toggle-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: var(--background-card);
+      color: var(--text);
+      border: 1px solid var(--border-color);
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 1rem;
+      box-shadow: var(--box-shadow);
+      z-index: 999;
+      transition: all 0.2s ease;
+    }
+    
+    .admin-toggle-btn:hover {
+      background: var(--background-input);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    
+    .admin-toggle-btn:focus {
+      outline: none;
+    }
+     
+     .selected-count {
+       font-weight: 600;
+       color: var(--primary);
+       margin-left: auto;
+     }
+     
+     .issues-list {
+       max-height: 300px;
+       overflow-y: auto;
+     }
+     
+     .admin-btn {
+       background: #f8f9fa;
+       color: #495057;
+       border: 1px solid #dee2e6;
+       padding: 0.5rem 1rem;
+       border-radius: 4px;
+       cursor: pointer;
+       font-weight: 400;
+       font-size: 0.85rem;
+       transition: all 0.15s ease;
+       text-decoration: none;
+       display: inline-flex;
+       align-items: center;
+       gap: 0.3rem;
+     }
+     
+     .admin-btn:hover {
+       background: #e9ecef;
+       border-color: #adb5bd;
+       transform: none;
+     }
+     
+     .admin-btn:disabled {
+       background: #f8f9fa;
+       color: #adb5bd;
+       border-color: #dee2e6;
+       cursor: not-allowed;
+       transform: none;
+     }
+     
+     .admin-btn.danger {
+       background: #f8f9fa;
+       color: #dc3545;
+       border-color: #dc3545;
+     }
+     
+     .admin-btn.danger:hover {
+       background: #dc3545;
+       color: white;
+     }
+     
+              .admin-select {
+       background: white;
+       border: 1px solid #ddd;
+       border-radius: 6px;
+       padding: 0.5rem 0.8rem;
+       font-size: 0.9rem;
+       font-weight: 400;
+       color: #333;
+       cursor: pointer;
+     }
+     
+     .admin-select:focus {
+       outline: none;
+       border-color: #999;
+     }
+     
+     /* Responsive Design for Admin Panel */
+     @media (max-width: 1200px) {
+       .admin-panel-container {
+         width: 95vw;
+         max-height: 95vh;
+       }
+       
+       .admin-tabs {
+         flex-wrap: wrap;
+         gap: 0.3rem;
+       }
+       
+       .admin-tab {
+         padding: 0.8rem 1rem;
+         font-size: 0.9rem;
+       }
+       
+       .bulk-monuments-list {
+         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+       }
+     }
+     
+     @media (max-width: 768px) {
+       .admin-panel-container {
+         width: 98vw;
+         max-height: 98vh;
+         border-radius: 8px;
+       }
+       
+       .admin-header {
+         padding: 1.5rem 1.5rem 1rem 1.5rem;
+       }
+       
+       .admin-header h2 {
+         font-size: 1.5rem;
+       }
+       
+       .admin-tabs {
+         padding: 0.8rem 1rem;
+         flex-direction: column;
+       }
+       
+       .admin-tab {
+         width: 100%;
+         text-align: center;
+       }
+       
+       .admin-tab-content {
+         padding: 1rem;
+         max-height: calc(98vh - 250px);
+       }
+       
+       .admin-section {
+         padding: 1rem;
+         margin-bottom: 1.5rem;
+       }
+       
+       .bulk-controls,
+       .bulk-actions,
+       .export-controls,
+       .import-controls {
+         flex-direction: column;
+         gap: 0.8rem;
+       }
+       
+       .bulk-monuments-list {
+         grid-template-columns: 1fr;
+         max-height: 300px;
+       }
+       
+       .form-row {
+         grid-template-columns: 1fr;
+       }
+       
+       .edit-actions {
+         flex-direction: column;
+       }
+       
+       .validation-stats {
+         grid-template-columns: 1fr;
+         gap: 1rem;
+         padding: 1rem;
+       }
+       
+       .admin-toggle-btn {
+         bottom: 20px;
+         right: 20px;
+         padding: 0.6rem 1rem;
+         font-size: 0.9rem;
+       }
+     }
   </style>
 </head>
 <body>
@@ -58,6 +1785,224 @@
     </div>
   </div>
   <div id="map"></div>
+  
+  <!-- Gallery Container -->
+  <div id="gallery-container">
+    <div class="gallery-header">
+      <h1 class="gallery-title">Gallery Μνημείων</h1>
+      <p class="gallery-subtitle">Εξερευνήστε τα μνημεία της Φλώρινας σε μορφή gallery</p>
+      <div class="gallery-controls">
+        <div class="view-toggle">
+          <button id="grid-view-btn" class="view-btn active" title="Grid View">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 3h7v7H3V3zm0 11h7v7H3v-7zm11-11h7v7h-7V3zm0 11h7v7h-7v-7z"/>
+            </svg>
+          </button>
+          <button id="list-view-btn" class="view-btn" title="List View">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
+            </svg>
+          </button>
+          <button id="slideshow-view-btn" class="view-btn" title="Slideshow Mode">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </button>
+          <button id="compare-view-btn" class="view-btn" title="Compare Mode">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 3l-1.59 1.59L9 6.17V4h6v2.17l1.59-1.59L15 3l-3 3-3-3zM9 21l1.59-1.59L9 17.83V20h6v-2.17l-1.59 1.59L15 21l-3-3-3 3z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="gallery-grid" class="gallery-grid">
+      <!-- Monument cards will be dynamically inserted here -->
+    </div>
+    <div id="gallery-list" class="gallery-list" style="display: none;">
+      <!-- List view will be dynamically inserted here -->
+    </div>
+    <div id="gallery-slideshow" class="gallery-slideshow" style="display: none;">
+      <!-- Slideshow will be dynamically inserted here -->
+    </div>
+    <div id="gallery-compare" class="gallery-compare" style="display: none;">
+      <!-- Compare mode will be dynamically inserted here -->
+    </div>
+  </div>
+  
+  <!-- Admin Panel (Hidden by default, shown only to admins) -->
+  <div id="admin-panel" style="display: none;">
+    <div class="admin-panel-container">
+      <div class="admin-header">
+        <h2>🔧 Admin Panel</h2>
+        <button id="close-admin-panel" class="admin-close-btn">×</button>
+      </div>
+      
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="bulk-operations">Bulk Operations</button>
+        <button class="admin-tab" data-tab="data-validation">Data Validation</button>
+        <button class="admin-tab" data-tab="export-import">Export/Import</button>
+      </div>
+      
+      <!-- Bulk Operations Tab -->
+      <div id="bulk-operations" class="admin-tab-content active">
+        <div class="admin-section">
+          <h3>Bulk Selection</h3>
+                  <div class="bulk-controls">
+          <div class="bulk-controls-top">
+            <button id="select-all-btn" class="admin-btn">Select All</button>
+            <button id="deselect-all-btn" class="admin-btn">Deselect All</button>
+            <button id="refresh-data-btn" class="admin-btn">🔄 Refresh Data</button>
+            <span id="selected-count" class="selected-count">0 selected</span>
+          </div>
+          <div class="bulk-search">
+            <input type="text" id="bulk-search-input" placeholder="🔍 Αναζήτηση μνημείων..." class="admin-search-input">
+            <select id="bulk-filter-category" class="admin-select">
+              <option value="">Όλες οι κατηγορίες</option>
+            </select>
+          </div>
+        </div>
+          
+                  <div class="bulk-actions">
+          <button id="bulk-delete-btn" class="admin-btn danger" disabled>Delete Selected</button>
+  
+        </div>
+        </div>
+        
+        <div id="bulk-monuments-list" class="bulk-monuments-list">
+          <!-- Monuments will be loaded here with checkboxes -->
+        </div>
+      </div>
+      
+      <!-- Data Validation Tab -->
+      <div id="data-validation" class="admin-tab-content">
+        <div class="admin-section">
+          <h3>Data Quality Report</h3>
+          <div id="validation-stats" class="validation-stats">
+            <!-- Stats will be loaded here -->
+          </div>
+          
+          <div id="validation-issues" class="validation-issues">
+            <!-- Issues will be listed here -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Export/Import Tab -->
+      <div id="export-import" class="admin-tab-content">
+        <div class="admin-section">
+          <h3>Export Data</h3>
+          <div class="export-controls">
+            <button id="export-all-btn" class="admin-btn">Export All Monuments</button>
+            <button id="export-filtered-btn" class="admin-btn">Export Filtered</button>
+            <select id="export-format" class="admin-select">
+              <option value="csv">CSV</option>
+              <option value="json">JSON</option>
+              <option value="excel">Excel</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="admin-section">
+          <h3>Import Data</h3>
+          <div class="import-controls">
+            <input type="file" id="import-file" accept=".csv,.json,.xlsx" class="admin-file-input">
+            <button id="import-btn" class="admin-btn" disabled>Import Data</button>
+          </div>
+          <div id="import-preview" class="import-preview"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Panel Toggle Button (Only visible to admins) -->
+  <button id="admin-panel-toggle" class="admin-toggle-btn" style="display: none;">
+    🔧 Admin Panel
+  </button>
+
+  <!-- Monument Edit Modal -->
+  <div id="monument-edit-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Επεξεργασία Μνημείου</h3>
+        <button class="modal-close" onclick="window.closeMonumentEditModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="monument-edit-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Τίτλος:</label>
+              <input type="text" id="edit-title" class="edit-input" placeholder="Τίτλος μνημείου">
+            </div>
+            <div class="form-group">
+              <label>Κατηγορία:</label>
+              <select id="edit-category" class="edit-input">
+                <option value="">Επιλέξτε κατηγορία...</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Υποκατηγορία:</label>
+              <select id="edit-subcategory" class="edit-input">
+                <option value="">Επιλέξτε υποκατηγορία...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Τομέας:</label>
+              <select id="edit-domain" class="edit-input">
+                <option value="">Επιλέξτε τομέα...</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Χρόνος:</label>
+              <input type="date" id="edit-time" class="edit-input">
+            </div>
+            <div class="form-group">
+              <label>Χώρος:</label>
+              <input type="text" id="edit-space" class="edit-input" placeholder="Χωρική τοποθεσία">
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Περιγραφή:</label>
+            <textarea id="edit-description" class="edit-input" rows="3" placeholder="Περιγραφή μνημείου"></textarea>
+          </div>
+          <div class="form-group full-width">
+            <label>URL Εικόνας:</label>
+            <input type="url" id="edit-image" class="edit-input" placeholder="https://...">
+          </div>
+          <div class="form-group full-width">
+            <label>Λέξεις-κλειδιά:</label>
+            <input type="text" id="edit-keywords" class="edit-input" placeholder="Λέξεις-κλειδιά">
+          </div>
+          <div class="form-group full-width">
+            <label>Πηγές:</label>
+            <input type="text" id="edit-sources" class="edit-input" placeholder="Πηγές">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Latitude:</label>
+              <input type="number" step="any" id="edit-latitude" class="edit-input" placeholder="40.1234">
+            </div>
+            <div class="form-group">
+              <label>Longitude:</label>
+              <input type="number" step="any" id="edit-longitude" class="edit-input" placeholder="21.5678">
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="admin-btn" onclick="window.saveMonumentChanges()">💾 Αποθήκευση</button>
+            <button type="button" class="admin-btn danger" onclick="window.deleteSingleMonument()">🗑️ Διαγραφή</button>
+            <button type="button" class="admin-btn" onclick="window.viewMonumentOnMap()">🗺️ Προβολή στο Χάρτη</button>
+            <button type="button" class="admin-btn secondary" onclick="window.closeMonumentEditModal()">❌ Ακύρωση</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <div id="timeline-container"></div>
   <div id="app-tour-modal" style="display:none;">
     <div class="app-tour-backdrop"></div>
